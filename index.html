@@ -946,10 +946,12 @@
         function toggleAkadField() {
             const akadCheckbox = document.getElementById('free-akad');
             const ppnCheckbox = document.getElementById('free-ppn');
+            const akadPercentInput = document.getElementById('akad-percent');
             const show = akadCheckbox.checked;
             
             if (show) {
                 ppnCheckbox.checked = true;
+                setTimeout(() => akadPercentInput.focus(), 100);
             }
             
             document.getElementById('akad-container').classList.toggle('hidden', !show);
@@ -1746,8 +1748,10 @@
 
             const akadPercentInput = document.getElementById('akad-percent');
             akadPercentInput.addEventListener('input', updateAkadNominal);
+            
             akadPercentInput.addEventListener('blur', (e) => {
-                if (isNaN(parseFloat(e.target.value))) {
+                const val = parseFloat(e.target.value);
+                if (isNaN(val)) {
                     e.target.value = 0;
                     updateAkadNominal();
                 }
