@@ -310,6 +310,10 @@
                                 <input type="checkbox" id="show-diskon" onchange="toggleDiscountField()" class="w-4 h-4 accent-gold">
                                 <span class="text-[12px] font-medium text-slate-600">SHOW DISKON</span>
                             </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="free-akad" onchange="toggleAkadField()" class="w-4 h-4 accent-gold">
+                                <span class="text-[12px] font-medium text-slate-600">SUBSIDI AKAD</span>
+                            </label>
                         </div>
 
                         <div id="discount-container" class="hidden">
@@ -317,6 +321,23 @@
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">Rp</span>
                                 <input type="text" id="discount-input" class="input-field pl-10" value="0">
+                            </div>
+                        </div>
+
+                        <div id="akad-container" class="hidden">
+                            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Subsidi Akad (Hitung dari Harga Dasar)</h3>
+                            <div class="flex gap-3">
+                                <div class="w-1/3">
+                                    <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Subsidi (%)</label>
+                                    <input type="number" id="akad-percent" class="input-field" value="0" step="1">
+                                </div>
+                                <div class="flex-1">
+                                    <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Subsidi Akad (Rp)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">Rp</span>
+                                        <input type="text" id="akad-input" class="input-field pl-10" value="0">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -481,6 +502,34 @@
                                 </div>
                                 <div id="res-kanopi-note" class="text-[10px] text-blue-600 font-bold mt-1 hidden">
                                     * UNIT INI MENDAPATKAN PROMO FREE KANOPI
+                                </div>
+                                <div id="res-akad-note" class="text-[10px] text-purple-600 font-bold mt-1 hidden">
+                                    * UNIT INI MENDAPATKAN PROMO SUBSIDI BIAYA AKAD
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Benefit Section -->
+                        <div id="res-benefit-section" class="card p-6 border-emerald-100 bg-emerald-50/30 hidden">
+                            <div class="flex items-center gap-2 mb-4">
+                                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                                    <i data-lucide="gift" class="w-3.5 h-3.5"></i>
+                                </div>
+                                <h3 class="text-[11px] font-bold text-emerald-700 uppercase tracking-widest">Total Nilai Manfaat (Promo)</h3>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <div id="res-benefit-ppn-row" class="flex justify-between items-center hidden">
+                                    <span class="text-xs text-slate-500">Subsidi PPN (DTP)</span>
+                                    <span class="text-sm font-bold text-emerald-600" id="res-benefit-ppn">Rp 0</span>
+                                </div>
+                                <div id="res-benefit-akad-row" class="flex justify-between items-center hidden">
+                                    <span class="text-xs text-slate-500">Subsidi Biaya Akad</span>
+                                    <span class="text-sm font-bold text-purple-600" id="res-benefit-akad">Rp 0</span>
+                                </div>
+                                <div class="pt-2 border-t border-emerald-100 flex justify-between items-center">
+                                    <span class="text-xs font-bold text-emerald-700">TOTAL MANFAAT</span>
+                                    <span class="text-base font-black text-emerald-700" id="res-benefit-total">Rp 0</span>
                                 </div>
                             </div>
                         </div>
@@ -877,6 +926,7 @@
                 priceInput.value = formatCurrency(price);
             }
             updateDPNominal();
+            updateAkadNominal();
         }
 
         function togglePriceOverride() {
@@ -889,6 +939,22 @@
         function toggleDiscountField() {
             const show = document.getElementById('show-diskon').checked;
             document.getElementById('discount-container').classList.toggle('hidden', !show);
+            updateDPNominal();
+            updateAkadNominal();
+        }
+
+        function toggleAkadField() {
+            const akadCheckbox = document.getElementById('free-akad');
+            const ppnCheckbox = document.getElementById('free-ppn');
+            const show = akadCheckbox.checked;
+            
+            if (show) {
+                ppnCheckbox.checked = true;
+            }
+            
+            document.getElementById('akad-container').classList.toggle('hidden', !show);
+            updateDPNominal();
+            updateAkadNominal();
         }
 
         function setPaymentMethod(method) {
@@ -911,12 +977,30 @@
 
         function updateDPNominal() {
             const basePrice = parseCurrency(document.getElementById('price-input').value);
+            const showDiskon = document.getElementById('show-diskon').checked;
+            const discount = showDiskon ? parseCurrency(document.getElementById('discount-input').value) : 0;
             const freePPN = document.getElementById('free-ppn').checked;
-            const priceToUse = freePPN ? Math.round(basePrice / 1.11) : basePrice;
+            
+            const priceAfterDiscount = basePrice - discount;
+            const priceToUse = freePPN ? Math.round(priceAfterDiscount / 1.11) : priceAfterDiscount;
             
             const percent = parseFloat(document.getElementById('dp-percent').value) || 0;
             const nominal = Math.round(priceToUse * (percent / 100));
             document.getElementById('dp-nominal').value = formatCurrency(nominal);
+        }
+
+        function updateAkadNominal() {
+            const basePrice = parseCurrency(document.getElementById('price-input').value);
+            const showDiskon = document.getElementById('show-diskon').checked;
+            const discount = showDiskon ? parseCurrency(document.getElementById('discount-input').value) : 0;
+            const freePPN = document.getElementById('free-ppn').checked;
+            
+            const priceAfterDiscount = basePrice - discount;
+            const priceToUse = freePPN ? Math.round(priceAfterDiscount / 1.11) : priceAfterDiscount;
+            
+            const percent = parseFloat(document.getElementById('akad-percent').value) || 0;
+            const nominal = Math.round(priceToUse * (percent / 100));
+            document.getElementById('akad-input').value = formatCurrency(nominal);
         }
 
         // Calculations
@@ -928,6 +1012,8 @@
             const discount = showDiskon ? parseCurrency(document.getElementById('discount-input').value) : 0;
             const freePPN = document.getElementById('free-ppn').checked;
             const freeKanopi = document.getElementById('free-kanopi').checked;
+            const freeAkad = document.getElementById('free-akad').checked;
+            const akadSubsidiNominal = freeAkad ? parseCurrency(document.getElementById('akad-input').value) : 0;
             const utj = parseCurrency(document.getElementById('utj-input').value);
             
             const priceAfterDiscount = basePrice - discount;
@@ -949,6 +1035,37 @@
             document.getElementById('res-utj').innerText = `Rp ${formatCurrency(utj)}`;
             document.getElementById('res-ppn-note').classList.toggle('hidden', !freePPN);
             document.getElementById('res-kanopi-note').classList.toggle('hidden', !freeKanopi);
+            document.getElementById('res-akad-note').classList.toggle('hidden', !freeAkad);
+
+            // Benefit Calculation & UI
+            const ppnValue = freePPN ? (priceAfterDiscount - finalBasePrice) : 0;
+            const totalBenefit = ppnValue + akadSubsidiNominal;
+
+            if (totalBenefit > 0) {
+                document.getElementById('res-benefit-section').classList.remove('hidden');
+                
+                // PPN Benefit
+                const ppnRow = document.getElementById('res-benefit-ppn-row');
+                if (freePPN) {
+                    ppnRow.classList.remove('hidden');
+                    document.getElementById('res-benefit-ppn').innerText = `Rp ${formatCurrency(ppnValue)}`;
+                } else {
+                    ppnRow.classList.add('hidden');
+                }
+
+                // Akad Benefit
+                const akadRow = document.getElementById('res-benefit-akad-row');
+                if (freeAkad && akadSubsidiNominal > 0) {
+                    akadRow.classList.remove('hidden');
+                    document.getElementById('res-benefit-akad').innerText = `Rp ${formatCurrency(akadSubsidiNominal)}`;
+                } else {
+                    akadRow.classList.add('hidden');
+                }
+
+                document.getElementById('res-benefit-total').innerText = `Rp ${formatCurrency(totalBenefit)}`;
+            } else {
+                document.getElementById('res-benefit-section').classList.add('hidden');
+            }
 
             if (currentPaymentMethod === 'kpr') {
                 const dpNominal = parseCurrency(document.getElementById('dp-nominal').value);
@@ -1066,15 +1183,26 @@
             const unitNum = document.getElementById('sim-unit').value || '-';
             
             const basePrice = parseCurrency(document.getElementById('price-input').value);
-            const discount = document.getElementById('show-diskon').checked ? parseCurrency(document.getElementById('discount-input').value) : 0;
+            const showDiskon = document.getElementById('show-diskon').checked;
+            const discount = showDiskon ? parseCurrency(document.getElementById('discount-input').value) : 0;
             const priceAfterDiscount = basePrice - discount;
             
             const freePPN = document.getElementById('free-ppn').checked;
+            const freeKanopi = document.getElementById('free-kanopi').checked;
+            const freeAkad = document.getElementById('free-akad').checked;
+            const akadSubsidiNominal = freeAkad ? parseCurrency(document.getElementById('akad-input').value) : 0;
             const priceExcPPN = freePPN ? Math.round(priceAfterDiscount / 1.11) : priceAfterDiscount;
             const ppnValue = priceAfterDiscount - priceExcPPN;
             
             const utj = parseCurrency(document.getElementById('utj-input').value);
-            
+            const unitTitle = block !== '-' && unitNum !== '-' ? `${unitDisplayNames[unitType]} (${block} - ${unitNum})` : unitDisplayNames[unitType];
+
+            let message = `*SIMULASI GRAND ALMAS RESIDENCE*\n`;
+            message += `---------------------------------\n`;
+            message += `*${unitTitle}*\n`;
+            message += `Klien: ${client}\n`;
+            message += `---------------------------------\n\n`;
+
             if (currentPaymentMethod === 'kpr') {
                 const dpNominal = parseCurrency(document.getElementById('dp-nominal').value);
                 const dpExtra = parseCurrency(document.getElementById('dp-extra').value);
@@ -1093,128 +1221,82 @@
                 };
                 
                 const mainInstallment = Math.round(calculateInstallment(loanAmount, annualRate, years));
+                const totalPayment = mainInstallment * (years * 12);
+                const totalInterest = totalPayment - loanAmount;
+
+                message += `*RINCIAN BIAYA:*\n`;
+                message += `• Harga PL: Rp ${formatCurrency(basePrice)}\n`;
+                if (showDiskon) message += `• Diskon: - Rp ${formatCurrency(discount)}\n`;
+                message += `• Booking Fee (UTJ): Rp ${formatCurrency(utj)}\n`;
+                message += `• DP (Total): Rp ${formatCurrency(totalDP)}\n`;
+                if (freePPN) message += `• Harga Dasar (After PPN): Rp ${formatCurrency(priceExcPPN)}\n`;
+                message += `---------------------------------\n`;
+                message += `*ESTIMASI CICILAN:*\n`;
+                message += `*Rp ${formatCurrency(mainInstallment)} / bln*\n`;
+                message += `---------------------------------\n\n`;
+                message += `*DETAIL KPR:*\n`;
+                message += `• Plafond KPR: Rp ${formatCurrency(loanAmount)}\n`;
+                message += `• Total Bunga: Rp ${formatCurrency(totalInterest)}\n`;
+                message += `• Total Bayar: Rp ${formatCurrency(totalPayment)}\n`;
+                message += `• Tenor: ${years} Tahun / ${annualRate.toFixed(2)}%\n`;
+                message += `---------------------------------\n\n`;
+                
                 const inst10 = Math.round(calculateInstallment(loanAmount, annualRate, 10));
                 const inst15 = Math.round(calculateInstallment(loanAmount, annualRate, 15));
                 const inst20 = Math.round(calculateInstallment(loanAmount, annualRate, 20));
 
-                const dpSubsidi = dpNominal; 
-                const subsidiAkad = 20000000; 
-                const totalBenefit = dpSubsidi + subsidiAkad + ppnValue;
+                message += `*PERBANDINGAN TENOR:*\n`;
+                message += `• 10 Thn: Rp ${formatCurrency(inst10)}\n`;
+                message += `• 15 Thn: Rp ${formatCurrency(inst15)}\n`;
+                message += `• 20 Thn: Rp ${formatCurrency(inst20)}\n`;
+                message += `---------------------------------\n\n`;
 
-                return `*Simulasi Grand Almas Residence*\n` +
-                       `Klien: ${client}\n\n` +
-                       `*DETAIL UNIT:*\n` +
-                       `Tipe Unit: ${unitDisplayNames[unitType]}\n` +
-                       `Block: ${block}\n` +
-                       `Nomor Unit: ${unitNum}\n` +
-                       `---------------------------------\n` +
-                       `Harga PL: Rp ${formatCurrency(basePrice)}\n\n` +
-                       `*Program Free PPN (PPN DTP) ${freePPN ? 'Aktif' : 'Tidak'}*\n` +
-                       `Harga Dasar (After Free PPN): Rp ${formatCurrency(priceExcPPN)}\n\n` +
-                       `*PEMBAYARAN AWAL:*\n` +
-                       `Booking Fee (UTJ): Rp ${formatCurrency(utj)}\n` +
-                       `DP TAMBAH: Rp ${formatCurrency(dpExtra)}\n` +
-                       `*TOTAL KONSUMEN BAYAR: Rp ${formatCurrency(totalInitial)}*\n\n` +
-                       `*RINCIAN KPR:*\n` +
-                       `Harga Dasar (After Diskon & PPN): Rp ${formatCurrency(priceExcPPN)}\n` +
-                       `DP Standar (Subsidi): Rp ${formatCurrency(dpNominal)}\n` +
-                       `Plafond KPR: Rp ${formatCurrency(loanAmount)}\n` +
-                       `Bunga: ${annualRate.toFixed(2)}% p.a\n` +
-                       `Tenor: ${years} Tahun\n` +
-                       `---------------------------------\n` +
-                       `*ESTIMASI CICILAN:*\n` +
-                       `*Rp ${formatCurrency(mainInstallment)} / bln*\n` +
-                       `---------------------------------\n` +
-                       `*Perbandingan Tenor Lain:*\n` +
-                       `•  10 Thn: Rp ${formatCurrency(inst10)}\n` +
-                       `•  15 Thn: Rp ${formatCurrency(inst15)}\n` +
-                       `•  20 Thn: Rp ${formatCurrency(inst20)}\n\n` +
-                       `---------------------------------\n` +
-                       `*TOTAL BENEFIT DIDAPATKAN:*\n` +
-                       `* DP Subsidi: Rp ${formatCurrency(dpSubsidi)}\n` +
-                       `* Subsidi Akad: Rp ${formatCurrency(subsidiAkad)}\n` +
-                       `* Free PPN: Rp ${formatCurrency(ppnValue)}\n` +
-                       `*TOTAL NILAI MANFAAT: Rp ${formatCurrency(totalBenefit)}*\n` +
-                       `---------------------------------\n` +
-                       `Silakan diinformasikan jika ingin simulasi lanjutan 🙏`;
+                const totalBenefit = (freeAkad ? akadSubsidiNominal : 0) + (freePPN ? ppnValue : 0);
+                if (totalBenefit > 0) {
+                    message += `*TOTAL BENEFIT DIDAPATKAN:*\n`;
+                    if (freeAkad) message += `• Subsidi Akad: Rp ${formatCurrency(akadSubsidiNominal)}\n`;
+                    if (freePPN) message += `• Free PPN: Rp ${formatCurrency(ppnValue)}\n`;
+                    message += `*TOTAL NILAI MANFAAT: Rp ${formatCurrency(totalBenefit)}*\n\n`;
+                }
+
             } else if (currentPaymentMethod === 'cash-bertahap') {
                 const installment = Math.round((priceAfterDiscount - 500000) / 24);
                 
-                // Calculate KPR comparisons for reference
-                const dpNominal = parseCurrency(document.getElementById('dp-nominal').value);
-                const dpExtra = parseCurrency(document.getElementById('dp-extra').value);
-                const totalDP = dpNominal + dpExtra;
-                const loanAmount = priceExcPPN - totalDP - utj;
-                const annualRate = parseFloat(document.getElementById('interest-rate').value) || 0;
-                
-                const calculateInstallment = (loan, rate, y) => {
-                    const monthlyRate = (rate / 100) / 12;
-                    const totalMonths = y * 12;
-                    if (monthlyRate <= 0) return loan / totalMonths;
-                    return loan * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
-                };
-                
-                const inst10 = Math.round(calculateInstallment(loanAmount, annualRate, 10));
-                const inst15 = Math.round(calculateInstallment(loanAmount, annualRate, 15));
-                const inst20 = Math.round(calculateInstallment(loanAmount, annualRate, 20));
-
-                const dpSubsidi = dpNominal; 
-                const subsidiAkad = 20000000; 
-                const totalBenefit = dpSubsidi + subsidiAkad + ppnValue;
-
-                return `*Simulasi Grand Almas Residence*\n` +
-                       `Klien: ${client}\n\n` +
-                       `*DETAIL UNIT:*\n` +
-                       `Tipe Unit: ${unitDisplayNames[unitType]}\n` +
-                       `Block: ${block}\n` +
-                       `Nomor Unit: ${unitNum}\n` +
-                       `---------------------------------\n` +
-                       `Harga PL: Rp ${formatCurrency(basePrice)}\n\n` +
-                       `*Program Free PPN (PPN DTP) ${freePPN ? 'Aktif' : 'Tidak'}*\n` +
-                       `Harga Dasar (After Free PPN): Rp ${formatCurrency(priceExcPPN)}\n\n` +
-                       `*PEMBAYARAN AWAL:*\n` +
-                       `Booking Fee (UTJ): Rp ${formatCurrency(utj)}\n` +
-                       `DP TAMBAH: Rp 0\n` +
-                       `*TOTAL KONSUMEN BAYAR: Rp ${formatCurrency(utj)}*\n\n` +
-                       `*RINCIAN CASH BERTAHAP:*\n` +
-                       `Harga Dasar (After Diskon & PPN): Rp ${formatCurrency(priceExcPPN)}\n` +
-                       `DP Standar (Subsidi): Rp ${formatCurrency(dpNominal)}\n` +
-                       `Tenor: 24 Bulan\n` +
-                       `---------------------------------\n` +
-                       `*ESTIMASI CICILAN:*\n` +
-                       `*Rp ${formatCurrency(installment)} / bln*\n` +
-                       `---------------------------------\n` +
-                       `*Perbandingan Tenor KPR:*\n` +
-                       `•  10 Thn: Rp ${formatCurrency(inst10)}\n` +
-                       `•  15 Thn: Rp ${formatCurrency(inst15)}\n` +
-                       `•  20 Thn: Rp ${formatCurrency(inst20)}\n\n` +
-                       `---------------------------------\n` +
-                       `*TOTAL BENEFIT DIDAPATKAN:*\n` +
-                       `* DP Subsidi: Rp ${formatCurrency(dpSubsidi)}\n` +
-                       `* Subsidi Akad: Rp ${formatCurrency(subsidiAkad)}\n` +
-                       `* Free PPN: Rp ${formatCurrency(ppnValue)}\n` +
-                       `*TOTAL NILAI MANFAAT: Rp ${formatCurrency(totalBenefit)}*\n` +
-                       `---------------------------------\n` +
-                       `Silakan diinformasikan jika ingin simulasi lanjutan 🙏`;
+                message += `*RINCIAN CASH BERTAHAP:*\n`;
+                message += `• Harga Dasar: Rp ${formatCurrency(priceExcPPN)}\n`;
+                message += `• Booking Fee (UTJ): Rp ${formatCurrency(utj)}\n`;
+                message += `• Tenor: 24 Bulan\n`;
+                message += `---------------------------------\n`;
+                message += `*ESTIMASI CICILAN:*\n`;
+                message += `*Rp ${formatCurrency(installment)} / bln*\n`;
+                message += `---------------------------------\n\n`;
+                if (ppnValue > 0) {
+                    message += `*TOTAL BENEFIT DIDAPATKAN:*\n`;
+                    message += `• Free PPN: Rp ${formatCurrency(ppnValue)}\n`;
+                    message += `*TOTAL NILAI MANFAAT: Rp ${formatCurrency(ppnValue)}*\n\n`;
+                }
             } else {
                 // Hard Cash
-                return `Simulasi Grand Almas Residence\n` +
-                       `Klien: ${client}\n` +
-                       `DETAIL UNIT:\n` +
-                       `Tipe Unit: ${unitDisplayNames[unitType]}\n` +
-                       `Block: ${block}\n` +
-                       `Nomor Unit: ${unitNum}\n` +
-                       `Harga PL: Rp ${formatCurrency(basePrice)}\n` +
-                       `Program Free PPN (PPN DTP) ${freePPN ? 'aktif' : 'tidak'}\n` +
-                       `Harga Dasar (After Free PPN): Rp ${formatCurrency(priceExcPPN)}\n` +
-                       `PEMBAYARAN TUNAI KERAS:\n` +
-                       `1. Uang Tanda Jadi (UTJ): Rp ${formatCurrency(utj)} (Hari ke-1)\n` +
-                       `2. Pelunasan: Rp ${formatCurrency(priceExcPPN - utj)} (Hari ke-75)\n` +
-                       `TOTAL BENEFIT DIDAPATKAN:\n` +
-                       `Free PPN: Rp ${formatCurrency(ppnValue)}\n` +
-                       `TOTAL NILAI MANFAAT: Rp ${formatCurrency(ppnValue)}\n` +
-                       `Silakan diinformasikan jika ingin simulasi lanjutan 🙏`;
+                message += `*RINCIAN HARD CASH:*\n`;
+                message += `• Harga Dasar: Rp ${formatCurrency(priceExcPPN)}\n`;
+                message += `• Booking Fee (UTJ): Rp ${formatCurrency(utj)}\n`;
+                message += `• Pelunasan: Rp ${formatCurrency(priceExcPPN - utj)}\n`;
+                message += `---------------------------------\n\n`;
+                if (ppnValue > 0) {
+                    message += `*TOTAL BENEFIT DIDAPATKAN:*\n`;
+                    message += `• Free PPN: Rp ${formatCurrency(ppnValue)}\n`;
+                    message += `*TOTAL NILAI MANFAAT: Rp ${formatCurrency(ppnValue)}*\n\n`;
+                }
             }
+
+            message += `---------------------------------\n`;
+            if (freePPN) message += `* UNIT INI MENDAPATKAN SUBSIDI PPN DITANGGUNG PEMERINTAH (FREE PPN)\n`;
+            if (freeKanopi) message += `* UNIT INI MENDAPATKAN PROMO FREE KANOPI\n`;
+            if (freeAkad) message += `* UNIT INI MENDAPATKAN PROMO SUBSIDI BIAYA AKAD\n`;
+            message += `---------------------------------\n`;
+            message += `Silakan diinformasikan jika ingin simulasi lanjutan 🙏`;
+
+            return message;
         }
 
         function copySimulationText() {
@@ -1596,17 +1678,26 @@
         }
 
         function formatInputs() {
-            const currencyInputs = ['price-input', 'discount-input', 'utj-input', 'dp-nominal', 'dp-extra'];
+            const currencyInputs = ['price-input', 'discount-input', 'utj-input', 'dp-nominal', 'dp-extra', 'akad-input'];
             currencyInputs.forEach(id => {
                 const el = document.getElementById(id);
                 el.addEventListener('input', (e) => {
                     let val = parseCurrency(e.target.value);
                     e.target.value = formatCurrency(val);
                     
+                    if (id === 'price-input' || id === 'discount-input') {
+                        updateDPNominal();
+                        updateAkadNominal();
+                    }
+
                     if (id === 'dp-nominal') {
                         const basePrice = parseCurrency(document.getElementById('price-input').value);
+                        const showDiskon = document.getElementById('show-diskon').checked;
+                        const discount = showDiskon ? parseCurrency(document.getElementById('discount-input').value) : 0;
                         const freePPN = document.getElementById('free-ppn').checked;
-                        const priceToUse = freePPN ? Math.round(basePrice / 1.11) : basePrice;
+                        
+                        const priceAfterDiscount = basePrice - discount;
+                        const priceToUse = freePPN ? Math.round(priceAfterDiscount / 1.11) : priceAfterDiscount;
                         
                         let percent = (val / priceToUse) * 100;
                         if (percent < 5) {
@@ -1616,10 +1707,26 @@
                         }
                         document.getElementById('dp-percent').value = percent.toFixed(2);
                     }
+
+                    if (id === 'akad-input') {
+                        const basePrice = parseCurrency(document.getElementById('price-input').value);
+                        const showDiskon = document.getElementById('show-diskon').checked;
+                        const discount = showDiskon ? parseCurrency(document.getElementById('discount-input').value) : 0;
+                        const freePPN = document.getElementById('free-ppn').checked;
+                        
+                        const priceAfterDiscount = basePrice - discount;
+                        const priceToUse = freePPN ? Math.round(priceAfterDiscount / 1.11) : priceAfterDiscount;
+                        
+                        let percent = (val / priceToUse) * 100;
+                        document.getElementById('akad-percent').value = Math.round(percent);
+                    }
                 });
             });
 
-            document.getElementById('free-ppn').addEventListener('change', updateDPNominal);
+            document.getElementById('free-ppn').addEventListener('change', () => {
+                updateDPNominal();
+                updateAkadNominal();
+            });
             document.getElementById('free-kanopi').addEventListener('change', calculateSimulation);
             
             const dpPercentInput = document.getElementById('dp-percent');
@@ -1634,6 +1741,15 @@
                 if (parseFloat(e.target.value) < 5 || isNaN(parseFloat(e.target.value))) {
                     e.target.value = 5;
                     updateDPNominal();
+                }
+            });
+
+            const akadPercentInput = document.getElementById('akad-percent');
+            akadPercentInput.addEventListener('input', updateAkadNominal);
+            akadPercentInput.addEventListener('blur', (e) => {
+                if (isNaN(parseFloat(e.target.value))) {
+                    e.target.value = 0;
+                    updateAkadNominal();
                 }
             });
         }
