@@ -1,0 +1,21 @@
+{
+  "name": "Grand Almas Sales App",
+  "short_name": "Grand Almas",
+  "description": "Sales and Stock Management for Grand Almas Residence",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F6F7FB",
+  "theme_color": "#C9A23A",
+  "icons": [
+    {
+      "src": "https://lh3.googleusercontent.com/d/1NvZHO_cJQNGlWIJVPkEoZ-uQZAzH6Vv1",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://lh3.googleusercontent.com/d/1NvZHO_cJQNGlWIJVPkEoZ-uQZAzH6Vv1",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

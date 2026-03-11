@@ -1,0 +1,1959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Grand Almas Sales App</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#C9A23A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Grand Almas">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1NvZHO_cJQNGlWIJVPkEoZ-uQZAzH6Vv1">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F6F7FB;
+            color: #1A1A1A;
+        }
+        .accent-gold { color: #C9A23A; }
+        .bg-gold { background-color: #C9A23A; }
+        .border-gold { border-color: #C9A23A; }
+        
+        .card {
+            background: white;
+            border: 1px solid #E7EAF2;
+            border-radius: 1rem; /* 16px */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        
+        .input-field {
+            height: 40px;
+            border-radius: 0.75rem; /* 12px */
+            border: 1px solid #E7EAF2;
+            padding: 0 0.75rem;
+            font-size: 0.875rem;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .input-field:focus {
+            border-color: #C9A23A;
+            box-shadow: 0 0 0 2px rgba(201, 162, 58, 0.1);
+        }
+        
+        .btn-pill {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .nav-pill {
+            color: #64748B;
+            background: transparent;
+        }
+        .nav-pill.active {
+            background: #F1F5F9;
+            color: #C9A23A;
+        }
+
+        .segmented-btn {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid #E7EAF2;
+            background: white;
+            transition: all 0.2s;
+        }
+        .segmented-btn:first-child { border-radius: 0.75rem 0 0 0.75rem; }
+        .segmented-btn:last-child { border-radius: 0 0.75rem 0.75rem 0; }
+        .segmented-btn.active {
+            background: #C9A23A;
+            color: white;
+            border-color: #C9A23A;
+        }
+
+        .active-nav-gold { color: #C9A23A !important; }
+        
+        /* App-like behavior */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        input, textarea {
+            user-select: text;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+
+        .stock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+            gap: 4px;
+        }
+        .unit-box {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 700;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .unit-box:hover { transform: scale(1.1); z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        .status-available { background-color: #DCFCE7; color: #166534; border: 1px solid #BBF7D0; }
+        .status-sold { background-color: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+        .status-hold { background-color: #FEF9C3; color: #854D0E; border: 1px solid #FEF08A; }
+        .status-booking { background-color: #DBEAFE; color: #1E40AF; border: 1px solid #BFDBFE; }
+        .status-next-plan { background-color: #F1F5F9; color: #94A3B8; border: 1px solid #E2E8F0; opacity: 0.6; }
+        .status-not-released { background-color: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #E2E8F0;
+            transition: .4s;
+            border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px; width: 14px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #C9A23A; }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        .selection-btn {
+            padding: 0.375rem 0.5rem;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 0.375rem;
+            border: 1px solid #E2E8F0;
+            color: #64748B;
+            background: white;
+            transition: all 0.2s;
+            cursor: pointer;
+            min-width: 40px;
+            text-align: center;
+        }
+        .selection-btn.active {
+            background: #C9A23A;
+            color: white;
+            border-color: #C9A23A;
+            box-shadow: 0 2px 4px rgba(201, 162, 58, 0.2);
+        }
+
+        #side-modal {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(100%);
+        }
+        #side-modal.open { transform: translateX(0); }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 h-[56px] bg-white border-b border-[#E7EAF2] z-50 px-4">
+        <div class="max-w-[1100px] mx-auto h-full flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="https://lh3.googleusercontent.com/d/1NvZHO_cJQNGlWIJVPkEoZ-uQZAzH6Vv1" 
+                     alt="Grand Almas Logo" 
+                     class="h-10 w-auto object-contain"
+                     referrerPolicy="no-referrer">
+                <div class="flex flex-col leading-tight">
+                    <span class="text-sm font-black tracking-tighter text-slate-800 uppercase">Grand Almas</span>
+                    <span class="text-[10px] font-bold tracking-[0.2em] text-gold uppercase">Residence</span>
+                </div>
+            </div>
+            
+            <nav class="hidden md:flex items-center gap-1">
+                <button onclick="switchView('simulasi')" id="nav-simulasi" class="nav-pill btn-pill active">
+                    <i data-lucide="calculator" class="w-4 h-4"></i> Simulasi
+                </button>
+                <button onclick="switchView('bandingkan')" id="nav-bandingkan" class="nav-pill btn-pill">
+                    <i data-lucide="columns-2" class="w-4 h-4"></i> Bandingkan
+                </button>
+                <button onclick="switchView('stock')" id="nav-stock" class="nav-pill btn-pill">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i> Stock Check
+                </button>
+                <button onclick="switchView('file')" id="nav-file" class="nav-pill btn-pill">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> File
+                </button>
+                <button id="install-btn" class="btn-pill bg-emerald-50 text-emerald-600 border border-emerald-100 hidden">
+                    <i data-lucide="download" class="w-4 h-4"></i> Install
+                </button>
+            </nav>
+
+            <div class="md:hidden flex items-center gap-2">
+                <button id="mobile-install-btn" class="p-2 bg-emerald-50 text-emerald-600 rounded-full hidden">
+                    <i data-lucide="download" class="w-5 h-5"></i>
+                </button>
+                <i data-lucide="menu" class="w-6 h-6 text-slate-500"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-[74px] pb-20 px-4 max-w-[1100px] mx-auto">
+        
+        <!-- View: Simulasi -->
+        <div id="view-simulasi" class="view-content flex flex-col md:flex-row gap-5">
+            <!-- Left Column: Form -->
+            <div class="w-full md:w-[420px] flex-shrink-0">
+                <div class="card p-5">
+                    <h2 class="text-[15px] font-semibold mb-5">Input Identitas Unit</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Nama Klien</label>
+                            <input type="text" id="client-name" placeholder="Masukkan nama klien" class="input-field">
+                        </div>
+
+                        <div>
+                            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Tipe Unit</label>
+                            <select id="unit-type" class="input-field appearance-none bg-no-repeat bg-[right_0.75rem_center] bg-[length:1rem]" onchange="updatePrice()">
+                                <option value="onyx-std">ONYX 6x10</option>
+                                <option value="onyx-hook">ONYX HOOK 7x10</option>
+                                <option value="sapphire-std">SAPPHIRE 6x12</option>
+                                <option value="sapphire-hook">SAPPHIRE HOOK 7x12</option>
+                                <option value="sapphire-premium-std">SAPPHIRE PREMIUM 6x14</option>
+                                <option value="sapphire-premium-hook">SAPPHIRE PREMIUM HOOK 8x14</option>
+                            </select>
+                            <div id="unit-type-warning" class="hidden mt-1.5 text-[10px] font-bold text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-100 flex items-center gap-2">
+                                <i data-lucide="alert-triangle" class="w-3 h-3"></i>
+                                <span>Tipe unit ini tidak tersedia di blok terpilih</span>
+                            </div>
+                        </div>
+
+
+
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Pilih Blok</label>
+                                <div id="block-selection-container" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 bg-slate-50/50 rounded-lg border border-slate-100">
+                                    <!-- Block buttons will be injected here -->
+                                </div>
+                                <input type="hidden" id="sim-block">
+                            </div>
+
+                            <div>
+                                <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Pilih Unit</label>
+                                <div id="unit-selection-container" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 bg-slate-50/50 rounded-lg border border-slate-100">
+                                    <p class="text-[10px] text-slate-400 p-1 italic">Pilih blok terlebih dahulu</p>
+                                </div>
+                                <input type="hidden" id="sim-unit">
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Harga Price List</label>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] font-bold text-slate-400">OVERRIDE</span>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="price-override" onchange="togglePriceOverride()">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">Rp</span>
+                                <input type="text" id="price-input" class="input-field pl-10" value="573.800.000" disabled>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Metode Pembayaran</label>
+                            <div class="flex flex-wrap gap-1">
+                                <button onclick="setPaymentMethod('kpr')" id="pay-kpr" class="segmented-btn active">KPR BANK</button>
+                                <button onclick="setPaymentMethod('cash-bertahap')" id="pay-cash-bertahap" class="segmented-btn">CASH BERTAHAP</button>
+                                <button onclick="setPaymentMethod('cash')" id="pay-cash" class="segmented-btn">HARD CASH</button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-6 py-1">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="free-ppn" class="w-4 h-4 accent-gold">
+                                <span class="text-[12px] font-medium text-slate-600">FREE PPN</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="free-kanopi" class="w-4 h-4 accent-gold">
+                                <span class="text-[12px] font-medium text-slate-600">FREE KANOPI</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="show-diskon" onchange="toggleDiscountField()" class="w-4 h-4 accent-gold">
+                                <span class="text-[12px] font-medium text-slate-600">SHOW DISKON</span>
+                            </label>
+                        </div>
+
+                        <div id="discount-container" class="hidden">
+                            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Diskon (Nominal)</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">Rp</span>
+                                <input type="text" id="discount-input" class="input-field pl-10" value="0">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">UTJ (Booking Fee)</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">Rp</span>
+                                <input type="text" id="utj-input" class="input-field pl-10" value="5.000.000">
+                            </div>
+                        </div>
+
+                        <div id="kpr-section" class="space-y-4 pt-2 border-t border-slate-100">
+                            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">DP KPR (Hitung dari Harga Dasar)</h3>
+                            
+                            <div class="flex gap-3">
+                                <div class="w-1/3">
+                                    <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">DP Std (%)</label>
+                                    <input type="number" id="dp-percent" class="input-field" value="5" min="5">
+                                </div>
+                                <div class="flex-1">
+                                    <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">DP Standar (Rp)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">Rp</span>
+                                        <input type="text" id="dp-nominal" class="input-field pl-10" value="0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">DP Tambahan (Nominal)</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">Rp</span>
+                                    <input type="text" id="dp-extra" class="input-field pl-10" value="0">
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Suku Bunga (% p.a)</label>
+                                    <div class="flex gap-1">
+                                        <button onclick="document.getElementById('interest-rate').value='2.49'" class="text-[9px] font-bold bg-slate-100 px-2 py-0.5 rounded hover:bg-gold hover:text-white transition-all">2.49%</button>
+                                        <button onclick="document.getElementById('interest-rate').value='3.90'" class="text-[9px] font-bold bg-slate-100 px-2 py-0.5 rounded hover:bg-gold hover:text-white transition-all">3.90%</button>
+                                        <button onclick="document.getElementById('interest-rate').value='4.90'" class="text-[9px] font-bold bg-slate-100 px-2 py-0.5 rounded hover:bg-gold hover:text-white transition-all">4.90%</button>
+                                    </div>
+                                </div>
+                                <input type="number" id="interest-rate" class="input-field" value="3.90" step="0.01">
+                            </div>
+
+                            <div>
+                                <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Tenor KPR (Tahun)</label>
+                                <div class="flex">
+                                    <button onclick="setTenor(10)" id="tenor-10" class="segmented-btn">10</button>
+                                    <button onclick="setTenor(15)" id="tenor-15" class="segmented-btn active">15</button>
+                                    <button onclick="setTenor(20)" id="tenor-20" class="segmented-btn">20</button>
+                                    <button onclick="setTenor('custom')" id="tenor-custom" class="segmented-btn">Custom</button>
+                                </div>
+                                <div id="custom-tenor-container" class="mt-2 hidden">
+                                    <input type="number" id="custom-tenor-input" placeholder="Masukkan tahun" class="input-field">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="calculateSimulation()" class="w-full bg-gold text-white font-bold py-3 rounded-xl shadow-lg shadow-gold/20 hover:bg-[#B89230] transition-all mt-4">
+                            LIHAT HASIL SIMULASI
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Result -->
+            <div class="flex-1">
+                <div id="result-placeholder" class="card h-full min-h-[500px] flex flex-col items-center justify-center p-10 text-center">
+                    <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="file-search" class="w-10 h-10 text-slate-300"></i>
+                    </div>
+                    <h3 class="text-slate-400 font-bold uppercase tracking-widest text-sm">Hasil Muncul Di Sini</h3>
+                    <p class="text-slate-400 text-xs mt-1">Pilih unit dan isi nominal lalu klik tombol</p>
+                </div>
+
+                <div id="result-content" class="hidden space-y-5">
+                    <div class="card p-6">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                            <div class="flex items-center gap-4">
+                                <img src="https://lh3.googleusercontent.com/d/1NvZHO_cJQNGlWIJVPkEoZ-uQZAzH6Vv1" 
+                                     alt="Logo" 
+                                     class="h-12 w-auto object-contain hidden md:block"
+                                     referrerPolicy="no-referrer">
+                                <div>
+                                    <h2 class="text-xl font-bold text-slate-800" id="res-unit-title">ONYX 6x10 Std</h2>
+                                    <p class="text-slate-500 text-sm" id="res-client-name">Klien: -</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2 w-full md:w-auto">
+                                <div class="flex gap-2">
+                                    <input type="tel" id="wa-number" placeholder="628123456789" class="input-field text-xs h-9 w-40" value="" onchange="saveWANumber(this.value)">
+                                    <div class="flex gap-1">
+                                        <button onclick="sendWhatsApp()" class="flex items-center gap-2 bg-emerald-500 text-white px-3 py-2 rounded-xl text-[10px] font-bold hover:bg-emerald-600 transition-all whitespace-nowrap">
+                                            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WA
+                                        </button>
+                                        <button onclick="copySimulationText()" class="flex items-center gap-2 bg-slate-100 text-slate-600 px-3 py-2 rounded-xl text-[10px] font-bold hover:bg-slate-200 transition-all whitespace-nowrap">
+                                            <i data-lucide="copy" class="w-3.5 h-3.5"></i> SALIN
+                                        </button>
+                                        <button onclick="shareSimulation()" class="flex items-center gap-2 bg-blue-500 text-white px-3 py-2 rounded-xl text-[10px] font-bold hover:bg-blue-600 transition-all whitespace-nowrap md:hidden">
+                                            <i data-lucide="share-2" class="w-3.5 h-3.5"></i> SHARE
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="text-[9px] text-slate-400 italic text-right">* Gunakan format 628...</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-y-6 gap-x-10">
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Harga Price List</p>
+                                <p class="text-lg font-bold text-slate-700" id="res-price">Rp 573.800.000</p>
+                            </div>
+                            <div id="res-discount-row">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Diskon</p>
+                                <p class="text-lg font-bold text-red-500" id="res-discount">- Rp 0</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total DP</p>
+                                <p class="text-lg font-bold text-slate-700" id="res-dp">Rp 28.690.000</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Booking Fee (UTJ)</p>
+                                <p class="text-lg font-bold text-slate-700" id="res-utj">Rp 5.000.000</p>
+                            </div>
+                            <div class="col-span-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Angsuran Bulanan (Est)</p>
+                                    <p class="text-2xl font-black text-gold" id="res-installment">Rp 4.598.000</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tenor / Bunga</p>
+                                    <p class="text-sm font-bold text-slate-600" id="res-tenor-info">15 Tahun / 6.00%</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8">
+                            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">Rincian Biaya & Akad</h3>
+                            <div class="space-y-2">
+                                <div id="res-price-exc-ppn-row" class="flex justify-between text-sm hidden">
+                                    <span class="text-slate-500">Harga Dasar (Exc PPN)</span>
+                                    <span class="font-semibold text-slate-700" id="res-price-exc-ppn">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-slate-500">Plafon KPR</span>
+                                    <span class="font-semibold text-slate-700" id="res-loan">Rp 545.110.000</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-slate-500">Total Bunga</span>
+                                    <span class="font-semibold text-slate-700" id="res-total-interest">Rp 282.530.000</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-slate-500">Total Pembayaran</span>
+                                    <span class="font-semibold text-slate-700" id="res-total-pay">Rp 827.640.000</span>
+                                </div>
+                                <div id="res-ppn-note" class="text-[10px] text-emerald-600 font-bold mt-2 hidden">
+                                    * UNIT INI MENDAPATKAN SUBSIDI PPN DITANGGUNG PEMERINTAH (FREE PPN)
+                                </div>
+                                <div id="res-kanopi-note" class="text-[10px] text-blue-600 font-bold mt-1 hidden">
+                                    * UNIT INI MENDAPATKAN PROMO FREE KANOPI
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Amortization Table (Simplified) -->
+                    <div class="card p-6">
+                        <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">Tabel Simulasi Angsuran</h3>
+                        <div class="overflow-hidden rounded-xl border border-slate-100">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
+                                    <tr>
+                                        <th class="px-4 py-3">Tahun</th>
+                                        <th class="px-4 py-3">Pokok</th>
+                                        <th class="px-4 py-3">Bunga</th>
+                                        <th class="px-4 py-3">Sisa Pinjaman</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="amortization-body" class="divide-y divide-slate-100">
+                                    <!-- Rows generated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: File -->
+        <div id="view-file" class="view-content hidden space-y-6">
+            <div class="card p-4 flex flex-col md:flex-row gap-4 items-center">
+                <div class="relative flex-1 w-full">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" id="file-search-input" placeholder="Cari judul file..." class="input-field pl-10" oninput="filterFiles()">
+                </div>
+                <div class="flex gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto" id="file-category-filters">
+                    <button onclick="filterFiles('SEMUA')" class="btn-pill bg-gold text-white px-4 filter-btn active">SEMUA</button>
+                    <button onclick="filterFiles('BROSUR')" class="btn-pill bg-slate-100 text-slate-500 px-4 filter-btn">BROSUR</button>
+                    <button onclick="filterFiles('HARGA')" class="btn-pill bg-slate-100 text-slate-500 px-4 filter-btn">HARGA</button>
+                    <button onclick="filterFiles('PROMO')" class="btn-pill bg-slate-100 text-slate-500 px-4 filter-btn">PROMO</button>
+                    <button onclick="filterFiles('UNIT')" class="btn-pill bg-slate-100 text-slate-500 px-4 filter-btn">UNIT</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5" id="file-grid">
+                <!-- File Cards -->
+                <div class="card p-5 flex flex-col file-card" data-category="BROSUR" data-title="Brosur Grand Almas Residence">
+                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4">
+                        <i data-lucide="file-text" class="w-6 h-6 text-blue-500"></i>
+                    </div>
+                    <h3 class="font-bold text-sm mb-1">Brosur Grand Almas Residence</h3>
+                    <div class="flex gap-2 mb-6">
+                        <span class="text-[10px] font-bold bg-blue-100 text-blue-600 px-2 py-0.5 rounded">PDF</span>
+                        <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded">BROSUR</span>
+                    </div>
+                    <div class="mt-auto flex gap-2">
+                        <button onclick="window.open('https://drive.google.com/file/d/1J0bLrZGBcMXa_tP3RtVydyapyp321mpJ/view?usp=drive_link', '_blank')" class="flex-1 py-2 bg-slate-50 text-slate-600 text-[11px] font-bold rounded-lg border border-slate-200">PREVIEW</button>
+                        <button onclick="window.open('https://drive.google.com/file/d/1J0bLrZGBcMXa_tP3RtVydyapyp321mpJ/view?usp=drive_link', '_blank')" class="flex-1 py-2 bg-gold text-white text-[11px] font-bold rounded-lg">BUKA</button>
+                    </div>
+                </div>
+
+                <div class="card p-5 flex flex-col file-card" data-category="HARGA" data-title="Price List Grand Almas (01 Jan 2026)">
+                    <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center mb-4">
+                        <i data-lucide="file-spreadsheet" class="w-6 h-6 text-emerald-500"></i>
+                    </div>
+                    <h3 class="font-bold text-sm mb-1">Price List Grand Almas (01 Jan 2026)</h3>
+                    <div class="flex gap-2 mb-6">
+                        <span class="text-[10px] font-bold bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded">XLSX</span>
+                        <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded">HARGA</span>
+                    </div>
+                    <div class="mt-auto flex gap-2">
+                        <button onclick="window.open('https://drive.google.com/file/d/16I45QF3M9vACJ6SEifrjecpB5hNFRNER/view?usp=drive_link', '_blank')" class="flex-1 py-2 bg-slate-50 text-slate-600 text-[11px] font-bold rounded-lg border border-slate-200">PREVIEW</button>
+                        <button onclick="window.open('https://drive.google.com/file/d/16I45QF3M9vACJ6SEifrjecpB5hNFRNER/view?usp=drive_link', '_blank')" class="flex-1 py-2 bg-gold text-white text-[11px] font-bold rounded-lg">BUKA</button>
+                    </div>
+                </div>
+
+                <div class="card p-5 flex flex-col file-card" data-category="UNIT" data-title="Siteplan / Masterplan">
+                    <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mb-4">
+                        <i data-lucide="map" class="w-6 h-6 text-orange-500"></i>
+                    </div>
+                    <h3 class="font-bold text-sm mb-1">Siteplan / Masterplan</h3>
+                    <div class="flex gap-2 mb-6">
+                        <span class="text-[10px] font-bold bg-orange-100 text-orange-600 px-2 py-0.5 rounded">JPG</span>
+                        <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded">UNIT</span>
+                    </div>
+                    <div class="mt-auto flex gap-2">
+                        <button onclick="window.open('https://drive.google.com/file/d/1kp58u3RExAdfi6x9djjwc7ZHe6tCCr_P/view?usp=drive_link', '_blank')" class="flex-1 py-2 bg-slate-50 text-slate-600 text-[11px] font-bold rounded-lg border border-slate-200">PREVIEW</button>
+                        <button onclick="window.open('https://drive.google.com/file/d/1kp58u3RExAdfi6x9djjwc7ZHe6tCCr_P/view?usp=drive_link', '_blank')" class="flex-1 py-2 bg-gold text-white text-[11px] font-bold rounded-lg">BUKA</button>
+                    </div>
+                </div>
+
+                <div class="card p-5 flex flex-col file-card" data-category="UNIT" data-title="Layout Tipe Onyx">
+                    <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-4">
+                        <i data-lucide="layout" class="w-6 h-6 text-purple-500"></i>
+                    </div>
+                    <h3 class="font-bold text-sm mb-1">Layout Tipe Onyx</h3>
+                    <div class="flex gap-2 mb-6">
+                        <span class="text-[10px] font-bold bg-purple-100 text-purple-600 px-2 py-0.5 rounded">PNG</span>
+                        <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded">UNIT</span>
+                    </div>
+                    <div class="mt-auto flex gap-2">
+                        <button class="flex-1 py-2 bg-slate-50 text-slate-600 text-[11px] font-bold rounded-lg border border-slate-200">PREVIEW</button>
+                        <button class="flex-1 py-2 bg-gold text-white text-[11px] font-bold rounded-lg">BUKA</button>
+                    </div>
+                </div>
+
+                <div class="card p-5 flex flex-col file-card" data-category="UNIT" data-title="Layout Tipe Sapphire">
+                    <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-4">
+                        <i data-lucide="layout" class="w-6 h-6 text-purple-500"></i>
+                    </div>
+                    <h3 class="font-bold text-sm mb-1">Layout Tipe Sapphire</h3>
+                    <div class="flex gap-2 mb-6">
+                        <span class="text-[10px] font-bold bg-purple-100 text-purple-600 px-2 py-0.5 rounded">PNG</span>
+                        <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded">UNIT</span>
+                    </div>
+                    <div class="mt-auto flex gap-2">
+                        <button class="flex-1 py-2 bg-slate-50 text-slate-600 text-[11px] font-bold rounded-lg border border-slate-200">PREVIEW</button>
+                        <button class="flex-1 py-2 bg-gold text-white text-[11px] font-bold rounded-lg">BUKA</button>
+                    </div>
+                </div>
+
+                <div class="card p-5 flex flex-col file-card" data-category="PROMO" data-title="Promo Grand Almas (Placeholder)">
+                    <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center mb-4">
+                        <i data-lucide="ticket" class="w-6 h-6 text-red-500"></i>
+                    </div>
+                    <h3 class="font-bold text-sm mb-1">Promo Grand Almas (Placeholder)</h3>
+                    <div class="flex gap-2 mb-6">
+                        <span class="text-[10px] font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded">PDF</span>
+                        <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded">PROMO</span>
+                    </div>
+                    <div class="mt-auto flex gap-2">
+                        <button class="flex-1 py-2 bg-slate-50 text-slate-600 text-[11px] font-bold rounded-lg border border-slate-200">PREVIEW</button>
+                        <button class="flex-1 py-2 bg-gold text-white text-[11px] font-bold rounded-lg">BUKA</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Stock Check -->
+        <div id="view-stock" class="view-content hidden space-y-6">
+            <div class="card p-5 flex flex-col md:flex-row gap-4 items-center">
+                <div class="flex-[2] w-full">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Cari Unit</label>
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="stock-search-input" placeholder="Ex: A-12" class="input-field pl-10" oninput="filterStock()">
+                    </div>
+                </div>
+                <div class="flex-1 w-full">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Pilih Blok</label>
+                    <select id="stock-block-filter" class="input-field appearance-none bg-no-repeat bg-[right_0.75rem_center] bg-[length:1rem]" onchange="filterStock()">
+                        <option value="SEMUA">SEMUA BLOK</option>
+                        <option value="A1">BLOK A1</option>
+                        <option value="A2">BLOK A2</option>
+                        <option value="A3">BLOK A3</option>
+                        <option value="A5">BLOK A5</option>
+                        <option value="A6">BLOK A6</option>
+                        <option value="A7">BLOK A7</option>
+                        <option value="A8">BLOK A8</option>
+                        <option value="A9">BLOK A9</option>
+                        <option value="A10">BLOK A10</option>
+                        <option value="A11">BLOK A11</option>
+                        <option value="A12">BLOK A12</option>
+                        <option value="B1">BLOK B1</option>
+                        <option value="B2">BLOK B2</option>
+                        <option value="B3">BLOK B3</option>
+                        <option value="B5">BLOK B5</option>
+                        <option value="B6">BLOK B6</option>
+                        <option value="B7">BLOK B7</option>
+                        <option value="B8">BLOK B8</option>
+                        <option value="B9">BLOK B9</option>
+                        <option value="B10">BLOK B10</option>
+                        <option value="B11">BLOK B11</option>
+                        <option value="B12">BLOK B12</option>
+                        <option value="B15">BLOK B15</option>
+                        <option value="B16">BLOK B16</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-3 pt-4">
+                    <a href="https://drive.google.com/file/d/1kp58u3RExAdfi6x9djjwc7ZHe6tCCr_P/view?usp=drive_link" target="_blank" class="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-lg border border-slate-200 hover:bg-slate-200 transition-all">
+                        <i data-lucide="map" class="w-4 h-4"></i>
+                        LIHAT MASTERPLAN
+                    </a>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <div class="mb-8">
+                    <div class="flex flex-wrap gap-4 pb-6 border-b border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-[#DCFCE7] border border-[#BBF7D0]"></div>
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">AVAILABLE</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-[#FEE2E2] border border-[#FECACA]"></div>
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">SOLD</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-[#FEF9C3] border border-[#FEF08A]"></div>
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">HOLD</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-[#DBEAFE] border border-[#BFDBFE]"></div>
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">BOOKING</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-4 py-4 border-b border-slate-100 mb-8">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 uppercase">ONYX</span>
+                            <span class="text-[10px] text-slate-400">6x10 / 7x10</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 uppercase">SAPPHIRE</span>
+                            <span class="text-[10px] text-slate-400">6x12 / 7x12</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 uppercase">PREMIUM</span>
+                            <span class="text-[10px] text-slate-400">6x14 / 8x14</span>
+                        </div>
+                    </div>
+
+                <div id="stock-grid-container" class="space-y-8">
+                    <!-- Unit blocks generated by JS -->
+                </div>
+
+                <div class="mt-10 pt-6 border-t border-slate-100 grid grid-cols-2 md:grid-cols-6 gap-4">
+                    <div class="text-center">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Unit</p>
+                        <p class="text-xl font-bold text-slate-700">0</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-[10px] font-bold text-emerald-500 uppercase mb-1">Available</p>
+                        <p class="text-xl font-bold text-emerald-600">0</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-[10px] font-bold text-red-500 uppercase mb-1">Sold</p>
+                        <p class="text-xl font-bold text-red-600">0</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-[10px] font-bold text-amber-500 uppercase mb-1">Hold</p>
+                        <p class="text-xl font-bold text-amber-600">0</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-[10px] font-bold text-blue-500 uppercase mb-1">Booking</p>
+                        <p class="text-xl font-bold text-blue-600">0</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Next Plan</p>
+                        <p class="text-xl font-bold text-slate-500">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Bandingkan -->
+        <div id="view-bandingkan" class="view-content hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Comparison Slot 1 -->
+                <div class="card p-6 border-gold/30 bg-gold/[0.02]">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-sm font-bold text-gold uppercase tracking-widest">Opsi 1</h3>
+                        <button onclick="copyToComparison(1)" class="text-[10px] font-bold text-slate-400 hover:text-gold transition-all">AMBIL DARI SIMULASI</button>
+                    </div>
+                    <div id="comp-slot-1" class="space-y-4">
+                        <div class="text-center py-10 text-slate-300">
+                            <i data-lucide="plus-circle" class="w-8 h-8 mx-auto mb-2 opacity-20"></i>
+                            <p class="text-[10px] font-bold uppercase tracking-widest">Belum Ada Data</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparison Slot 2 -->
+                <div class="card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Opsi 2</h3>
+                        <button onclick="copyToComparison(2)" class="text-[10px] font-bold text-slate-400 hover:text-gold transition-all">AMBIL DARI SIMULASI</button>
+                    </div>
+                    <div id="comp-slot-2" class="space-y-4">
+                        <div class="text-center py-10 text-slate-300">
+                            <i data-lucide="plus-circle" class="w-8 h-8 mx-auto mb-2 opacity-20"></i>
+                            <p class="text-[10px] font-bold uppercase tracking-widest">Belum Ada Data</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="comparison-table" class="card p-6 hidden">
+                <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-6 text-center">Tabel Perbandingan Detail</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <tbody class="divide-y divide-slate-100">
+                            <tr>
+                                <td class="py-3 text-slate-500 font-medium">Tipe Unit</td>
+                                <td class="py-3 font-bold text-center" id="comp-type-1">-</td>
+                                <td class="py-3 font-bold text-center" id="comp-type-2">-</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 text-slate-500 font-medium">Harga List</td>
+                                <td class="py-3 font-bold text-center" id="comp-price-1">-</td>
+                                <td class="py-3 font-bold text-center" id="comp-price-2">-</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 text-slate-500 font-medium">Total DP</td>
+                                <td class="py-3 font-bold text-center text-red-500" id="comp-dp-1">-</td>
+                                <td class="py-3 font-bold text-center text-red-500" id="comp-dp-2">-</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 text-slate-500 font-medium">Plafon KPR</td>
+                                <td class="py-3 font-bold text-center" id="comp-loan-1">-</td>
+                                <td class="py-3 font-bold text-center" id="comp-loan-2">-</td>
+                            </tr>
+                            <tr class="bg-gold/[0.03]">
+                                <td class="py-4 text-gold font-bold">Angsuran / bln</td>
+                                <td class="py-4 font-black text-center text-lg text-gold" id="comp-inst-1">-</td>
+                                <td class="py-4 font-black text-center text-lg text-gold" id="comp-inst-2">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Navigation (Mobile Only) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center h-16 z-50 px-2 pb-safe">
+        <button onclick="switchView('simulasi')" id="mobile-nav-simulasi" class="flex flex-col items-center gap-1 text-slate-400">
+            <i data-lucide="calculator" class="w-5 h-5"></i>
+            <span class="text-[10px] font-bold uppercase">Simulasi</span>
+        </button>
+        <button onclick="switchView('bandingkan')" id="mobile-nav-bandingkan" class="flex flex-col items-center gap-1 text-slate-400">
+            <i data-lucide="columns-2" class="w-5 h-5"></i>
+            <span class="text-[10px] font-bold uppercase">Bandingkan</span>
+        </button>
+        <button onclick="switchView('stock')" id="mobile-nav-stock" class="flex flex-col items-center gap-1 text-slate-400">
+            <i data-lucide="layout-grid" class="w-5 h-5"></i>
+            <span class="text-[10px] font-bold uppercase">Stock</span>
+        </button>
+        <button onclick="switchView('file')" id="mobile-nav-file" class="flex flex-col items-center gap-1 text-slate-400">
+            <i data-lucide="file-text" class="w-5 h-5"></i>
+            <span class="text-[10px] font-bold uppercase">File</span>
+        </button>
+    </nav>
+
+    <!-- Side Modal (Stock Detail) -->
+    <div id="side-modal" class="fixed top-0 right-0 h-full w-full md:w-[360px] bg-white shadow-2xl z-[60] border-l border-slate-100 p-6">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-lg font-bold text-slate-800">Detail Unit</h2>
+            <button onclick="closeModal()" class="p-2 hover:bg-slate-50 rounded-full transition-all">
+                <i data-lucide="x" class="w-5 h-5 text-slate-400"></i>
+            </button>
+        </div>
+
+        <div class="space-y-6">
+            <div class="flex items-center gap-4">
+                <div id="modal-status-badge" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">AVAILABLE</div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-6">
+
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Blok - Unit</p>
+                    <p class="text-sm font-semibold text-slate-700" id="modal-unit">A - 12</p>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tipe</p>
+                    <p class="text-sm font-semibold text-slate-700" id="modal-type">ONYX 6x10 Std</p>
+                </div>
+                <div id="modal-price-container">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Harga</p>
+                    <p class="text-sm font-semibold text-slate-700" id="modal-price">Rp 573.800.000</p>
+                </div>
+            </div>
+
+            <div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Catatan</p>
+                <p class="text-xs text-slate-500 leading-relaxed" id="modal-note">Unit ini berada di posisi strategis dekat dengan gerbang utama dan area taman bermain.</p>
+            </div>
+
+            <div class="pt-6 border-t border-slate-100" id="modal-action-container">
+                <button onclick="selectUnitFromModal()" class="w-full bg-gold text-white font-bold py-3 rounded-xl shadow-lg shadow-gold/20 hover:bg-[#B89230] transition-all">
+                    SIMULASI UNIT INI
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/6281380999568" target="_blank" class="fixed bottom-6 right-6 w-14 h-14 bg-emerald-500 text-white rounded-full shadow-xl flex items-center justify-center hover:scale-110 transition-all z-50">
+        <i data-lucide="message-circle" class="w-7 h-7"></i>
+    </a>
+
+    <script>
+        // Data
+        const unitPrices = {
+            'onyx-std': 631800000,
+            'onyx-hook': 683800000,
+            'ruby-std': 631800000,
+            'ruby-hook': 683800000,
+            'sapphire-std': 763800000,
+            'sapphire-hook': 815800000,
+            'sapphire-premium-std': 932800000,
+            'sapphire-premium-hook': 1138800000
+        };
+
+        const unitPricesCashBertahap = {
+            'onyx-std': 694800000,
+            'onyx-hook': 751800000,
+            'ruby-std': 694800000,
+            'ruby-hook': 751800000,
+            'sapphire-std': 831800000,
+            'sapphire-hook': 897800000,
+            'sapphire-premium-std': 1025800000,
+            'sapphire-premium-hook': 1251800000
+        };
+
+        const specialUnitPrices = {
+            'B7-23': 569189189,
+            'B7-26': 569189189
+        };
+
+        const unitDisplayNames = {
+            'onyx-std': 'ONYX 6x10',
+            'onyx-hook': 'ONYX HOOK 7x10',
+            'ruby-std': 'ONYX 6x10 (Ruby)',
+            'ruby-hook': 'ONYX HOOK 7x10 (Ruby)',
+            'sapphire-std': 'SAPPHIRE 6x12',
+            'sapphire-hook': 'SAPPHIRE HOOK 7x12',
+            'sapphire-premium-std': 'SAPPHIRE PREMIUM 6x14',
+            'sapphire-premium-hook': 'SAPPHIRE PREMIUM HOOK 8x14'
+        };
+
+        let currentPaymentMethod = 'kpr';
+        let currentTenor = 15;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            generateStockGrid();
+            updatePrice();
+            formatInputs();
+            loadWANumber();
+            initSimulationSelection();
+            switchView('simulasi'); // Ensure initial view and nav state
+        });
+
+        // View Switcher
+        function switchView(viewId) {
+            document.querySelectorAll('.view-content').forEach(v => v.classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
+            const desktopNav = document.getElementById(`nav-${viewId}`);
+            if (desktopNav) desktopNav.classList.add('active');
+
+            // Mobile Nav
+            document.querySelectorAll('nav.md\\:hidden button').forEach(b => b.classList.remove('active-nav-gold'));
+            const mobileNav = document.getElementById(`mobile-nav-${viewId}`);
+            if (mobileNav) mobileNav.classList.add('active-nav-gold');
+            
+            window.scrollTo(0, 0);
+        }
+
+        // Form Logic
+        function updatePrice() {
+            const type = document.getElementById('unit-type').value;
+            const block = document.getElementById('sim-block').value;
+            const unit = document.getElementById('sim-unit').value;
+            const unitKey = block && unit ? `${block}-${unit}` : null;
+            
+            // Check compatibility
+            const warningEl = document.getElementById('unit-type-warning');
+            if (block) {
+                const blockInfo = masterplanBlocks[block];
+                if (blockInfo) {
+                    let isCompatible = false;
+                    if (unit) {
+                        const unitInfo = blockInfo.units.find(u => (typeof u === 'object' ? u.num : u) == unit);
+                        const expectedType = (unitInfo && typeof unitInfo === 'object' && unitInfo.type) || blockInfo.type;
+                        isCompatible = (type === expectedType);
+                    } else {
+                        // If no unit selected, check if the type exists anywhere in the block
+                        const blockDefaultType = blockInfo.type;
+                        const unitSpecificTypes = blockInfo.units
+                            .filter(u => typeof u === 'object' && u.type)
+                            .map(u => u.type);
+                        isCompatible = (type === blockDefaultType || unitSpecificTypes.includes(type));
+                    }
+                    
+                    if (!isCompatible) {
+                        warningEl.classList.remove('hidden');
+                    } else {
+                        warningEl.classList.add('hidden');
+                    }
+                }
+            } else {
+                warningEl.classList.add('hidden');
+            }
+
+            let price = unitPrices[type];
+            
+            // Check for special pricing
+            if (unitKey && specialUnitPrices[unitKey]) {
+                price = specialUnitPrices[unitKey];
+            } else if (currentPaymentMethod === 'cash-bertahap') {
+                price = unitPricesCashBertahap[type];
+            }
+            
+            const priceInput = document.getElementById('price-input');
+            if (!document.getElementById('price-override').checked) {
+                priceInput.value = formatCurrency(price);
+            }
+            updateDPNominal();
+        }
+
+        function togglePriceOverride() {
+            const isOverride = document.getElementById('price-override').checked;
+            const priceInput = document.getElementById('price-input');
+            priceInput.disabled = !isOverride;
+            if (!isOverride) updatePrice();
+        }
+
+        function toggleDiscountField() {
+            const show = document.getElementById('show-diskon').checked;
+            document.getElementById('discount-container').classList.toggle('hidden', !show);
+        }
+
+        function setPaymentMethod(method) {
+            currentPaymentMethod = method;
+            document.getElementById('pay-kpr').classList.toggle('active', method === 'kpr');
+            document.getElementById('pay-cash-bertahap').classList.toggle('active', method === 'cash-bertahap');
+            document.getElementById('pay-cash').classList.toggle('active', method === 'cash');
+            
+            document.getElementById('kpr-section').classList.toggle('hidden', method !== 'kpr');
+            
+            updatePrice();
+        }
+
+        function setTenor(years) {
+            currentTenor = years;
+            document.querySelectorAll('[id^="tenor-"]').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tenor-${years}`).classList.add('active');
+            document.getElementById('custom-tenor-container').classList.toggle('hidden', years !== 'custom');
+        }
+
+        function updateDPNominal() {
+            const basePrice = parseCurrency(document.getElementById('price-input').value);
+            const freePPN = document.getElementById('free-ppn').checked;
+            const priceToUse = freePPN ? Math.round(basePrice / 1.11) : basePrice;
+            
+            const percent = parseFloat(document.getElementById('dp-percent').value) || 0;
+            const nominal = Math.round(priceToUse * (percent / 100));
+            document.getElementById('dp-nominal').value = formatCurrency(nominal);
+        }
+
+        // Calculations
+        function calculateSimulation() {
+            const clientName = document.getElementById('client-name').value || '-';
+            const unitType = document.getElementById('unit-type').value;
+            const basePrice = parseCurrency(document.getElementById('price-input').value);
+            const showDiskon = document.getElementById('show-diskon').checked;
+            const discount = showDiskon ? parseCurrency(document.getElementById('discount-input').value) : 0;
+            const freePPN = document.getElementById('free-ppn').checked;
+            const freeKanopi = document.getElementById('free-kanopi').checked;
+            const utj = parseCurrency(document.getElementById('utj-input').value);
+            
+            const priceAfterDiscount = basePrice - discount;
+            const finalBasePrice = freePPN ? Math.round(priceAfterDiscount / 1.11) : priceAfterDiscount;
+            
+            const block = document.getElementById('sim-block').value;
+            const unit = document.getElementById('sim-unit').value;
+            
+            // UI Update
+            document.getElementById('result-placeholder').classList.add('hidden');
+            document.getElementById('result-content').classList.remove('hidden');
+            
+            const unitTitle = block && unit ? `${unitDisplayNames[unitType]} (${block} - ${unit})` : unitDisplayNames[unitType];
+            document.getElementById('res-unit-title').innerText = unitTitle;
+            document.getElementById('res-client-name').innerText = `Klien: ${clientName}`;
+            document.getElementById('res-price').innerText = `Rp ${formatCurrency(basePrice)}`;
+            document.getElementById('res-discount').innerText = `- Rp ${formatCurrency(discount)}`;
+            document.getElementById('res-discount-row').classList.toggle('hidden', !showDiskon);
+            document.getElementById('res-utj').innerText = `Rp ${formatCurrency(utj)}`;
+            document.getElementById('res-ppn-note').classList.toggle('hidden', !freePPN);
+            document.getElementById('res-kanopi-note').classList.toggle('hidden', !freeKanopi);
+
+            if (currentPaymentMethod === 'kpr') {
+                const dpNominal = parseCurrency(document.getElementById('dp-nominal').value);
+                const dpExtra = parseCurrency(document.getElementById('dp-extra').value);
+                const totalDP = dpNominal + dpExtra;
+                
+                // PDF Logic: Loan = PriceExcPPN - DP - UTJ
+                const loanAmount = finalBasePrice - totalDP - utj;
+                const annualRate = parseFloat(document.getElementById('interest-rate').value) || 0;
+                const years = currentTenor === 'custom' ? (parseInt(document.getElementById('custom-tenor-input').value) || 0) : currentTenor;
+                
+                const monthlyRate = (annualRate / 100) / 12;
+                const totalMonths = years * 12;
+                
+                let monthlyInstallment = 0;
+                if (monthlyRate > 0) {
+                    monthlyInstallment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+                } else {
+                    monthlyInstallment = loanAmount / totalMonths;
+                }
+
+                const totalPayment = monthlyInstallment * totalMonths;
+                const totalInterest = totalPayment - loanAmount;
+
+                document.getElementById('res-dp').innerText = `Rp ${formatCurrency(totalDP)}`;
+                document.getElementById('res-installment').innerText = `Rp ${formatCurrency(Math.round(monthlyInstallment))}`;
+                document.getElementById('res-loan').innerText = `Rp ${formatCurrency(loanAmount)}`;
+                document.getElementById('res-total-interest').innerText = `Rp ${formatCurrency(Math.round(totalInterest))}`;
+                document.getElementById('res-total-pay').innerText = `Rp ${formatCurrency(Math.round(totalPayment))}`;
+                document.getElementById('res-tenor-info').innerText = `${years} Tahun / ${annualRate.toFixed(2)}%`;
+
+                if (freePPN) {
+                    document.getElementById('res-price-exc-ppn-row').classList.remove('hidden');
+                    document.getElementById('res-price-exc-ppn').innerText = `Rp ${formatCurrency(finalBasePrice)}`;
+                } else {
+                    document.getElementById('res-price-exc-ppn-row').classList.add('hidden');
+                }
+
+                generateAmortization(loanAmount, annualRate, years, Math.round(monthlyInstallment));
+            } else if (currentPaymentMethod === 'cash-bertahap') {
+                // Cash Bertahap logic (24 months)
+                // Formula from PDF: (Price - 500,000) / 24
+                const installment = Math.round((priceAfterDiscount - 500000) / 24);
+                
+                document.getElementById('res-dp').innerText = 'Rp 0';
+                document.getElementById('res-installment').innerText = `Rp ${formatCurrency(installment)}`;
+                document.getElementById('res-loan').innerText = `Rp ${formatCurrency(priceAfterDiscount - utj)}`;
+                document.getElementById('res-total-interest').innerText = 'Rp 0';
+                document.getElementById('res-total-pay').innerText = `Rp ${formatCurrency(priceAfterDiscount)}`;
+                document.getElementById('res-tenor-info').innerText = '24 BULAN';
+                document.getElementById('amortization-body').innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-slate-400">Tabel amortisasi disederhanakan untuk Cash Bertahap</td></tr>';
+            } else {
+                // Cash logic
+                document.getElementById('res-dp').innerText = 'Rp 0';
+                document.getElementById('res-installment').innerText = `Rp ${formatCurrency(finalBasePrice)}`;
+                document.getElementById('res-loan').innerText = 'Rp 0';
+                document.getElementById('res-total-interest').innerText = 'Rp 0';
+                document.getElementById('res-total-pay').innerText = `Rp ${formatCurrency(finalBasePrice)}`;
+                document.getElementById('res-tenor-info').innerText = 'HARD CASH';
+                document.getElementById('amortization-body').innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-slate-400">Tabel tidak tersedia untuk Hard Cash</td></tr>';
+                
+                document.getElementById('res-dp-installment-note').classList.add('hidden');
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function generateAmortization(loan, rate, years, installment) {
+            const body = document.getElementById('amortization-body');
+            body.innerHTML = '';
+            
+            let balance = loan;
+            const monthlyRate = (rate / 100) / 12;
+            
+            for (let i = 1; i <= years; i++) {
+                let yearlyPrincipal = 0;
+                let yearlyInterest = 0;
+                
+                for (let m = 1; m <= 12; m++) {
+                    const interest = balance * monthlyRate;
+                    const principal = installment - interest;
+                    yearlyInterest += interest;
+                    yearlyPrincipal += principal;
+                    balance -= principal;
+                }
+                
+                const row = `
+                    <tr class="hover:bg-slate-50 transition-all">
+                        <td class="px-4 py-3 font-bold text-slate-700">Tahun ${i}</td>
+                        <td class="px-4 py-3 text-slate-600">Rp ${formatCurrency(Math.round(yearlyPrincipal))}</td>
+                        <td class="px-4 py-3 text-slate-600">Rp ${formatCurrency(Math.round(yearlyInterest))}</td>
+                        <td class="px-4 py-3 font-semibold text-slate-700">Rp ${formatCurrency(Math.max(0, Math.round(balance)))}</td>
+                    </tr>
+                `;
+                body.innerHTML += row;
+            }
+        }
+
+        // WhatsApp Integration
+        function saveWANumber(val) {
+            localStorage.setItem('last_wa_number', val);
+        }
+
+        function loadWANumber() {
+            const saved = localStorage.getItem('last_wa_number');
+            if (saved) {
+                document.getElementById('wa-number').value = saved;
+            }
+        }
+
+        function getSimulationMessage() {
+            const client = document.getElementById('client-name').value || 'Bpk/Ibu';
+            const unitType = document.getElementById('unit-type').value;
+            const block = document.getElementById('sim-block').value || '-';
+            const unitNum = document.getElementById('sim-unit').value || '-';
+            
+            const basePrice = parseCurrency(document.getElementById('price-input').value);
+            const discount = document.getElementById('show-diskon').checked ? parseCurrency(document.getElementById('discount-input').value) : 0;
+            const priceAfterDiscount = basePrice - discount;
+            
+            const freePPN = document.getElementById('free-ppn').checked;
+            const priceExcPPN = freePPN ? Math.round(priceAfterDiscount / 1.11) : priceAfterDiscount;
+            const ppnValue = priceAfterDiscount - priceExcPPN;
+            
+            const utj = parseCurrency(document.getElementById('utj-input').value);
+            
+            if (currentPaymentMethod === 'kpr') {
+                const dpNominal = parseCurrency(document.getElementById('dp-nominal').value);
+                const dpExtra = parseCurrency(document.getElementById('dp-extra').value);
+                const totalDP = dpNominal + dpExtra;
+                const totalInitial = utj + dpExtra;
+                
+                const loanAmount = priceExcPPN - totalDP - utj;
+                const annualRate = parseFloat(document.getElementById('interest-rate').value) || 0;
+                const years = currentTenor === 'custom' ? (parseInt(document.getElementById('custom-tenor-input').value) || 0) : currentTenor;
+                
+                const calculateInstallment = (loan, rate, y) => {
+                    const monthlyRate = (rate / 100) / 12;
+                    const totalMonths = y * 12;
+                    if (monthlyRate <= 0) return loan / totalMonths;
+                    return loan * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+                };
+                
+                const mainInstallment = Math.round(calculateInstallment(loanAmount, annualRate, years));
+                const inst10 = Math.round(calculateInstallment(loanAmount, annualRate, 10));
+                const inst15 = Math.round(calculateInstallment(loanAmount, annualRate, 15));
+                const inst20 = Math.round(calculateInstallment(loanAmount, annualRate, 20));
+
+                const dpSubsidi = dpNominal; 
+                const subsidiAkad = 20000000; 
+                const totalBenefit = dpSubsidi + subsidiAkad + ppnValue;
+
+                return `*Simulasi Grand Almas Residence*\n` +
+                       `Klien: ${client}\n\n` +
+                       `*DETAIL UNIT:*\n` +
+                       `Tipe Unit: ${unitDisplayNames[unitType]}\n` +
+                       `Block: ${block}\n` +
+                       `Nomor Unit: ${unitNum}\n` +
+                       `---------------------------------\n` +
+                       `Harga PL: Rp ${formatCurrency(basePrice)}\n\n` +
+                       `*Program Free PPN (PPN DTP) ${freePPN ? 'Aktif' : 'Tidak'}*\n` +
+                       `Harga Dasar (After Free PPN): Rp ${formatCurrency(priceExcPPN)}\n\n` +
+                       `*PEMBAYARAN AWAL:*\n` +
+                       `Booking Fee (UTJ): Rp ${formatCurrency(utj)}\n` +
+                       `DP TAMBAH: Rp ${formatCurrency(dpExtra)}\n` +
+                       `*TOTAL KONSUMEN BAYAR: Rp ${formatCurrency(totalInitial)}*\n\n` +
+                       `*RINCIAN KPR:*\n` +
+                       `Harga Dasar (After Diskon & PPN): Rp ${formatCurrency(priceExcPPN)}\n` +
+                       `DP Standar (Subsidi): Rp ${formatCurrency(dpNominal)}\n` +
+                       `Plafond KPR: Rp ${formatCurrency(loanAmount)}\n` +
+                       `Bunga: ${annualRate.toFixed(2)}% p.a\n` +
+                       `Tenor: ${years} Tahun\n` +
+                       `---------------------------------\n` +
+                       `*ESTIMASI CICILAN:*\n` +
+                       `*Rp ${formatCurrency(mainInstallment)} / bln*\n` +
+                       `---------------------------------\n` +
+                       `*Perbandingan Tenor Lain:*\n` +
+                       `•  10 Thn: Rp ${formatCurrency(inst10)}\n` +
+                       `•  15 Thn: Rp ${formatCurrency(inst15)}\n` +
+                       `•  20 Thn: Rp ${formatCurrency(inst20)}\n\n` +
+                       `---------------------------------\n` +
+                       `*TOTAL BENEFIT DIDAPATKAN:*\n` +
+                       `* DP Subsidi: Rp ${formatCurrency(dpSubsidi)}\n` +
+                       `* Subsidi Akad: Rp ${formatCurrency(subsidiAkad)}\n` +
+                       `* Free PPN: Rp ${formatCurrency(ppnValue)}\n` +
+                       `*TOTAL NILAI MANFAAT: Rp ${formatCurrency(totalBenefit)}*\n` +
+                       `---------------------------------\n` +
+                       `Silakan diinformasikan jika ingin simulasi lanjutan 🙏`;
+            } else if (currentPaymentMethod === 'cash-bertahap') {
+                const installment = Math.round((priceAfterDiscount - 500000) / 24);
+                
+                // Calculate KPR comparisons for reference
+                const dpNominal = parseCurrency(document.getElementById('dp-nominal').value);
+                const dpExtra = parseCurrency(document.getElementById('dp-extra').value);
+                const totalDP = dpNominal + dpExtra;
+                const loanAmount = priceExcPPN - totalDP - utj;
+                const annualRate = parseFloat(document.getElementById('interest-rate').value) || 0;
+                
+                const calculateInstallment = (loan, rate, y) => {
+                    const monthlyRate = (rate / 100) / 12;
+                    const totalMonths = y * 12;
+                    if (monthlyRate <= 0) return loan / totalMonths;
+                    return loan * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+                };
+                
+                const inst10 = Math.round(calculateInstallment(loanAmount, annualRate, 10));
+                const inst15 = Math.round(calculateInstallment(loanAmount, annualRate, 15));
+                const inst20 = Math.round(calculateInstallment(loanAmount, annualRate, 20));
+
+                const dpSubsidi = dpNominal; 
+                const subsidiAkad = 20000000; 
+                const totalBenefit = dpSubsidi + subsidiAkad + ppnValue;
+
+                return `*Simulasi Grand Almas Residence*\n` +
+                       `Klien: ${client}\n\n` +
+                       `*DETAIL UNIT:*\n` +
+                       `Tipe Unit: ${unitDisplayNames[unitType]}\n` +
+                       `Block: ${block}\n` +
+                       `Nomor Unit: ${unitNum}\n` +
+                       `---------------------------------\n` +
+                       `Harga PL: Rp ${formatCurrency(basePrice)}\n\n` +
+                       `*Program Free PPN (PPN DTP) ${freePPN ? 'Aktif' : 'Tidak'}*\n` +
+                       `Harga Dasar (After Free PPN): Rp ${formatCurrency(priceExcPPN)}\n\n` +
+                       `*PEMBAYARAN AWAL:*\n` +
+                       `Booking Fee (UTJ): Rp ${formatCurrency(utj)}\n` +
+                       `DP TAMBAH: Rp 0\n` +
+                       `*TOTAL KONSUMEN BAYAR: Rp ${formatCurrency(utj)}*\n\n` +
+                       `*RINCIAN CASH BERTAHAP:*\n` +
+                       `Harga Dasar (After Diskon & PPN): Rp ${formatCurrency(priceExcPPN)}\n` +
+                       `DP Standar (Subsidi): Rp ${formatCurrency(dpNominal)}\n` +
+                       `Tenor: 24 Bulan\n` +
+                       `---------------------------------\n` +
+                       `*ESTIMASI CICILAN:*\n` +
+                       `*Rp ${formatCurrency(installment)} / bln*\n` +
+                       `---------------------------------\n` +
+                       `*Perbandingan Tenor KPR:*\n` +
+                       `•  10 Thn: Rp ${formatCurrency(inst10)}\n` +
+                       `•  15 Thn: Rp ${formatCurrency(inst15)}\n` +
+                       `•  20 Thn: Rp ${formatCurrency(inst20)}\n\n` +
+                       `---------------------------------\n` +
+                       `*TOTAL BENEFIT DIDAPATKAN:*\n` +
+                       `* DP Subsidi: Rp ${formatCurrency(dpSubsidi)}\n` +
+                       `* Subsidi Akad: Rp ${formatCurrency(subsidiAkad)}\n` +
+                       `* Free PPN: Rp ${formatCurrency(ppnValue)}\n` +
+                       `*TOTAL NILAI MANFAAT: Rp ${formatCurrency(totalBenefit)}*\n` +
+                       `---------------------------------\n` +
+                       `Silakan diinformasikan jika ingin simulasi lanjutan 🙏`;
+            } else {
+                // Hard Cash
+                return `Simulasi Grand Almas Residence\n` +
+                       `Klien: ${client}\n` +
+                       `DETAIL UNIT:\n` +
+                       `Tipe Unit: ${unitDisplayNames[unitType]}\n` +
+                       `Block: ${block}\n` +
+                       `Nomor Unit: ${unitNum}\n` +
+                       `Harga PL: Rp ${formatCurrency(basePrice)}\n` +
+                       `Program Free PPN (PPN DTP) ${freePPN ? 'aktif' : 'tidak'}\n` +
+                       `Harga Dasar (After Free PPN): Rp ${formatCurrency(priceExcPPN)}\n` +
+                       `PEMBAYARAN TUNAI KERAS:\n` +
+                       `1. Uang Tanda Jadi (UTJ): Rp ${formatCurrency(utj)} (Hari ke-1)\n` +
+                       `2. Pelunasan: Rp ${formatCurrency(priceExcPPN - utj)} (Hari ke-75)\n` +
+                       `TOTAL BENEFIT DIDAPATKAN:\n` +
+                       `Free PPN: Rp ${formatCurrency(ppnValue)}\n` +
+                       `TOTAL NILAI MANFAAT: Rp ${formatCurrency(ppnValue)}\n` +
+                       `Silakan diinformasikan jika ingin simulasi lanjutan 🙏`;
+            }
+        }
+
+        function copySimulationText() {
+            const text = getSimulationMessage();
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Teks simulasi berhasil disalin ke clipboard!');
+            });
+        }
+
+        function shareSimulation() {
+            const text = getSimulationMessage();
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Simulasi Grand Almas',
+                    text: text
+                }).catch(console.error);
+            } else {
+                copySimulationText();
+            }
+        }
+
+        function sendWhatsApp() {
+            let waNumber = document.getElementById('wa-number').value.replace(/\D/g, '');
+            if (waNumber.startsWith('0')) {
+                waNumber = '62' + waNumber.substring(1);
+            }
+            
+            if (!waNumber) {
+                alert('Silakan masukkan nomor WhatsApp tujuan (format: 628...)');
+                return;
+            }
+            
+            const message = getSimulationMessage();
+            const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        // Stock Grid Generator
+        const masterplanBlocks = {
+            'A1': { type: 'sapphire-std', status: 'next-plan', units: [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 30, 32] },
+            'A2': { type: 'sapphire-std', status: 'next-plan', units: [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 30, 32] },
+            'A3': { 
+                type: 'sapphire-std', 
+                units: [
+                    { num: 1, status: 'next-plan' }, { num: 3, status: 'next-plan' }, { num: 5, status: 'next-plan' }, { num: 7, status: 'next-plan' }, 
+                    { num: 9, status: 'next-plan' }, { num: 11, status: 'next-plan' }, { num: 15, status: 'next-plan' }, { num: 17, status: 'next-plan' },
+                    { num: 19, status: 'next-plan' }, { num: 21, status: 'next-plan' }, { num: 23, status: 'next-plan' }, { num: 25, status: 'next-plan' },
+                    { num: 27, status: 'next-plan' },
+                    { num: 2, status: 'sold', type: 'sapphire-hook' }, { num: 6, status: 'sold' }, { num: 8, status: 'sold' }, { num: 10, status: 'sold' },
+                    { num: 12, status: 'sold' }, { num: 16, status: 'sold' }, { num: 18, status: 'sold' }, { num: 20, status: 'sold' },
+                    { num: 22, status: 'sold' }, { num: 26, status: 'sold' }, { num: 28, status: 'sold' }, { num: 30, status: 'sold' },
+                    { num: 32, status: 'sold', type: 'sapphire-hook' }
+                ]
+            },
+            'A5': { type: 'sapphire-std', status: 'sold', units: [
+                { num: 1, type: 'sapphire-hook' }, { num: 2, type: 'sapphire-hook' }, 3, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, { num: 27, type: 'sapphire-hook' }, 28, 30, { num: 32, type: 'sapphire-hook' }
+            ]},
+            'A6': { type: 'sapphire-std', status: 'sold', units: [
+                { num: 1, type: 'sapphire-hook' }, { num: 2, type: 'sapphire-hook' }, 3, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, { num: 27, type: 'sapphire-hook' }, 28, { num: 30, type: 'sapphire-hook' }
+            ]},
+            'A7': { type: 'sapphire-std', status: 'sold', units: [
+                { num: 1, type: 'sapphire-hook' }, { num: 2, type: 'sapphire-hook' }, 3, 5, 6, 7, 8, 9, 10, { num: 11, type: 'sapphire-hook' }, 12, 16, { num: 18, type: 'sapphire-hook' }
+            ]},
+            'A8': { type: 'sapphire-std', status: 'sold', units: [
+                { num: 1, type: 'sapphire-hook' }, { num: 2, type: 'sapphire-hook' }, 3, 5, 6, 7, 8, 9, 10, 11, 12, { num: 15, type: 'sapphire-hook' }, 16, { num: 18, type: 'sapphire-hook' }
+            ]},
+            'A9': { type: 'sapphire-std', status: 'next-plan', units: [1, 2, 3, 5, 6, 7] },
+            'A10': { type: 'sapphire-std', status: 'next-plan', units: [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 20, 21, 22, 23, 26, 28] },
+            'A11': { type: 'sapphire-std', units: [
+                { num: 1, status: 'hold', type: 'sapphire-hook' }, { num: 2, status: 'hold', type: 'sapphire-hook' }, { num: 3, status: 'hold' }, { num: 5, status: 'hold' },
+                { num: 6, status: 'hold' }, { num: 7, status: 'hold' }, { num: 8, status: 'hold' }, { num: 9, status: 'hold' },
+                { num: 10, status: 'available' }, { num: 11, status: 'hold' }, { num: 12, status: 'available' }, { num: 15, status: 'hold' },
+                { num: 16, status: 'available' }, { num: 17, status: 'hold', type: 'sapphire-hook' }, { num: 18, status: 'available' }, { num: 20, status: 'available', type: 'sapphire-hook' }
+            ]},
+            'A12': { type: 'sapphire-std', units: [
+                { num: 1, status: 'hold', type: 'sapphire-hook' }, { num: 3, status: 'hold' }, { num: 5, status: 'hold' }, { num: 7, status: 'hold' }, { num: 9, status: 'hold' }, 
+                { num: 11, status: 'hold' }, { num: 15, status: 'hold' }, { num: 17, status: 'hold' }, { num: 19, status: 'hold' }, { num: 21, status: 'hold', type: 'sapphire-hook' },
+                { num: 2, status: 'next-plan' }, { num: 6, status: 'next-plan' }, { num: 8, status: 'next-plan' }, { num: 10, status: 'next-plan' }, { num: 12, status: 'next-plan' }, 
+                { num: 16, status: 'next-plan' }, { num: 18, status: 'next-plan' }, { num: 20, status: 'next-plan' }, { num: 22, status: 'next-plan' }, { num: 26, status: 'next-plan' }, { num: 28, status: 'next-plan' }
+            ]},
+            'B1': { type: 'sapphire-std', status: 'sold', units: [
+                { num: 1, type: 'sapphire-hook' }, { num: 2, type: 'ruby-hook' }, 3, 5, { num: 6, type: 'ruby-std' }, 7, { num: 8, type: 'ruby-std' }, 9, { num: 10, type: 'ruby-std' }, 11, { num: 12, type: 'ruby-std' }, 15, { num: 16, type: 'ruby-std' }, 17, { num: 18, type: 'ruby-std' }, 19, { num: 20, type: 'ruby-std' }, { num: 21, type: 'sapphire-hook' }, { num: 22, type: 'ruby-std' }, { num: 26, type: 'ruby-hook' }
+            ]},
+            'B2': { type: 'ruby-std', status: 'sold', units: [
+                { num: 1, type: 'ruby-hook' }, { num: 2, type: 'ruby-hook' }, 3, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 20, { num: 21, type: 'ruby-hook' }, 22, { num: 26, type: 'ruby-hook' }
+            ]},
+            'B3': { type: 'ruby-std', status: 'sold', units: [
+                { num: 1, type: 'ruby-hook' }, 3, 5, 7, 9, 11, 15, 17, { num: 19, type: 'ruby-hook' },
+                { num: 2, type: 'onyx-hook' }, { num: 6, type: 'onyx-std' }, { num: 8, type: 'onyx-std' }, { num: 10, type: 'onyx-std' }, { num: 12, type: 'onyx-std' }, { num: 16, type: 'onyx-std' }, { num: 18, type: 'onyx-std' }, { num: 20, type: 'onyx-std' }, { num: 22, type: 'onyx-hook' }
+            ]},
+            'B5': { type: 'onyx-std', status: 'sold', units: [
+                { num: 1, type: 'onyx-hook' }, { num: 2, type: 'onyx-hook' }, 3, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 20, 21, { num: 22, status: 'available' }, 23, 25, 26, 27, 28, { num: 29, type: 'onyx-hook' }, 30, 32, { num: 36, type: 'onyx-hook' }
+            ]},
+            'B6': { type: 'onyx-std', status: 'hold', units: [
+                { num: 1, type: 'onyx-hook' }, { num: 2, type: 'onyx-hook' }, 3, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 19, { num: 20, status: 'available' }, 21, 22, 23, 25, 26, { num: 27, type: 'onyx-hook' }, 28, { num: 30, type: 'onyx-hook' }
+            ]},
+            'B7': { type: 'onyx-std', status: 'available', units: [
+                { num: 1, status: 'hold', type: 'onyx-hook' }, { num: 2, status: 'hold', type: 'onyx-hook' }, 3, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 20, 21, { num: 22, status: 'hold' }, { num: 23, type: 'onyx-hook' }, { num: 26, status: 'hold', type: 'onyx-hook' }
+            ]},
+            'B8': { type: 'sapphire-premium-std', status: 'hold', units: [
+                { num: 1, type: 'sapphire-premium-hook' }, { num: 2, type: 'sapphire-premium-hook' }, 3, { num: 5, status: 'available' }, 6, { num: 7, status: 'available' }, 8, { num: 9, status: 'available' }, 10, 11, { num: 12, status: 'available' }, 15, 16, { num: 17, status: 'available' }, 18, 19, 20, 21, 22, { num: 23, type: 'sapphire-premium-hook' }, 26, { num: 28, type: 'sapphire-premium-hook' }
+            ]},
+            'B9': { type: 'sapphire-std', status: 'next-plan', units: [1, 2, 3, 5, 6, 7, 8, 10] },
+            'B10': { type: 'onyx-std', status: 'next-plan', units: [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 18] },
+            'B11': { type: 'onyx-std', status: 'hold', units: [
+                { num: 1, type: 'onyx-hook' }, { num: 2, type: 'onyx-hook' }, 3, 5, 6, 7, 8, 9, 10, 11, 12, { num: 15, type: 'onyx-hook' }, 16, { num: 18, type: 'onyx-hook' }
+            ]},
+            'B12': { type: 'onyx-std', status: 'next-plan', units: [1, 2, 3, 5, 6, 7, 8, 9, 11, 12, 15, 16, 18] },
+            'B15': { type: 'onyx-std', status: 'next-plan', units: [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 18] },
+            'B16': { type: 'onyx-std', status: 'hold', units: [
+                { num: 1, type: 'onyx-hook' }, { num: 2, type: 'onyx-hook' }, 3, 5, 6, 7, 8, 9, 10, 11, 12, { num: 15, type: 'onyx-hook' }, 16, { num: 18, type: 'onyx-hook' }
+            ]}
+        };
+
+        function generateStockGrid() {
+            const container = document.getElementById('stock-grid-container');
+            container.innerHTML = ''; // Clear existing
+            
+            const layout = [
+                { title: 'BLOCK A (ATAS)', blocks: ['A9', 'A10', 'A11', 'A12'] },
+                { title: 'BLOCK A (TENGAH)', blocks: ['A1', 'A2', 'A3', 'A5', 'A6', 'A7', 'A8'] },
+                { title: 'BLOCK B (BAWAH)', blocks: ['B1', 'B2', 'B3', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B15', 'B16'] }
+            ];
+
+            layout.forEach(section => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'space-y-4';
+                
+                const sectionTitle = document.createElement('h4');
+                sectionTitle.className = 'text-[12px] font-bold text-slate-800 uppercase tracking-widest border-l-4 border-gold pl-3 py-1 bg-slate-50 rounded-r-lg';
+                sectionTitle.innerText = section.title;
+                sectionDiv.appendChild(sectionTitle);
+                
+                const blocksContainer = document.createElement('div');
+                blocksContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6';
+                
+                section.blocks.forEach(blockName => {
+                    const blockInfo = masterplanBlocks[blockName];
+                    if (blockInfo) {
+                        const blockDiv = document.createElement('div');
+                        blockDiv.className = 'bg-white p-3 rounded-xl border border-slate-100 shadow-sm';
+                        
+                        const blockHeader = document.createElement('div');
+                        blockHeader.className = 'flex justify-between items-center mb-3';
+                        blockHeader.innerHTML = `
+                            <span class="text-[11px] font-bold text-slate-500">BLOCK ${blockName}</span>
+                            <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-400 uppercase">${blockInfo.type.split('-')[0]}</span>
+                        `;
+                        blockDiv.appendChild(blockHeader);
+
+                        const grid = document.createElement('div');
+                        grid.className = 'grid grid-cols-6 gap-1.5';
+                        
+                        if (blockInfo.units) {
+                            blockInfo.units.forEach(unit => {
+                                if (typeof unit === 'object') {
+                                    createUnitBox(grid, blockName, unit.num, unit.status || blockInfo.status, unit.type);
+                                } else {
+                                    createUnitBox(grid, blockName, unit, blockInfo.status);
+                                }
+                            });
+                        } else {
+                            for (let i = 1; i <= blockInfo.count; i++) {
+                                createUnitBox(grid, blockName, i, blockInfo.status);
+                            }
+                        }
+                        
+                        blockDiv.appendChild(grid);
+                        blocksContainer.appendChild(blockDiv);
+                    }
+                });
+                
+                sectionDiv.appendChild(blocksContainer);
+                container.appendChild(sectionDiv);
+            });
+            
+            updateStockStats();
+        }
+
+        function createUnitBox(container, block, num, status, typeOverride) {
+            const box = document.createElement('div');
+            box.className = `unit-box status-${status}`;
+            box.setAttribute('data-block', block);
+            box.innerText = `${block}${num}`;
+            box.onclick = () => openModal(`${block} - ${num}`, status, typeOverride);
+            container.appendChild(box);
+        }
+
+        function updateStockStats() {
+            const total = document.querySelectorAll('.unit-box').length;
+            const available = document.querySelectorAll('.unit-box.status-available').length;
+            const sold = document.querySelectorAll('.unit-box.status-sold').length;
+            const hold = document.querySelectorAll('.unit-box.status-hold').length;
+            const booking = document.querySelectorAll('.unit-box.status-booking').length;
+            const nextPlan = document.querySelectorAll('.unit-box.status-next-plan').length;
+            
+            const stats = document.querySelectorAll('#view-stock .text-xl');
+            if (stats.length >= 6) {
+                stats[0].innerText = total;
+                stats[1].innerText = available;
+                stats[2].innerText = sold;
+                stats[3].innerText = hold;
+                stats[4].innerText = booking;
+                stats[5].innerText = nextPlan;
+            }
+        }
+
+        function filterStock() {
+            const search = document.getElementById('stock-search-input').value.toUpperCase();
+            const blockFilter = document.getElementById('stock-block-filter').value;
+            const boxes = document.querySelectorAll('.unit-box');
+            
+            boxes.forEach(box => {
+                const label = box.innerText.toUpperCase();
+                const blockName = box.getAttribute('data-block');
+                
+                const matchesSearch = label.includes(search);
+                const matchesBlock = blockFilter === 'SEMUA' || blockName === blockFilter;
+                
+                if (matchesSearch && matchesBlock) {
+                    box.style.display = 'flex';
+                } else {
+                    box.style.display = 'none';
+                }
+            });
+
+            // Hide empty block containers
+            document.querySelectorAll('#stock-grid-container > div > div > div').forEach(blockDiv => {
+                const visibleBoxes = blockDiv.querySelectorAll('.unit-box[style*="display: flex"]');
+                const hasVisible = visibleBoxes.length > 0;
+                blockDiv.style.display = hasVisible ? 'block' : 'none';
+            });
+
+            // Hide empty section containers
+            document.querySelectorAll('#stock-grid-container > div').forEach(sectionDiv => {
+                const visibleBlocks = sectionDiv.querySelectorAll('div > div[style*="display: block"]');
+                const hasVisible = visibleBlocks.length > 0;
+                sectionDiv.style.display = hasVisible ? 'block' : 'none';
+            });
+        }
+
+        let currentFileCategory = 'SEMUA';
+
+        function filterFiles(category) {
+            if (category) {
+                currentFileCategory = category;
+                // Update button styles
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    if (btn.innerText === category) {
+                        btn.classList.add('bg-gold', 'text-white');
+                        btn.classList.remove('bg-slate-100', 'text-slate-500');
+                    } else {
+                        btn.classList.remove('bg-gold', 'text-white');
+                        btn.classList.add('bg-slate-100', 'text-slate-500');
+                    }
+                });
+            }
+
+            const search = document.getElementById('file-search-input').value.toLowerCase();
+            const cards = document.querySelectorAll('.file-card');
+
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title').toLowerCase();
+                const cat = card.getAttribute('data-category');
+                
+                const matchesSearch = title.includes(search);
+                const matchesCategory = currentFileCategory === 'SEMUA' || cat === currentFileCategory;
+
+                card.classList.toggle('hidden', !(matchesSearch && matchesCategory));
+            });
+        }
+
+        let currentSelectedUnit = null;
+
+        function openModal(unitLabel, status, typeOverride) {
+            const modal = document.getElementById('side-modal');
+            const badge = document.getElementById('modal-status-badge');
+            
+            badge.innerText = status.replace('-', ' ').toUpperCase();
+            badge.className = `px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest status-${status}`;
+            
+            document.getElementById('modal-unit').innerText = unitLabel;
+            
+            // Extract block name from label (e.g., "A11 - 1" -> "A11")
+            const parts = unitLabel.split(' - ');
+            const blockName = parts[0];
+            const unitNum = parts[1];
+            const unitKey = `${blockName}-${unitNum}`;
+            
+            const blockInfo = masterplanBlocks[blockName];
+            const type = typeOverride || (blockInfo ? blockInfo.type : 'onyx-std');
+            
+            document.getElementById('modal-type').innerText = unitDisplayNames[type];
+            
+            // Handle Price and Action based on status
+            const priceContainer = document.getElementById('modal-price-container');
+            const actionContainer = document.getElementById('modal-action-container');
+            const priceEl = document.getElementById('modal-price');
+            const noteEl = document.getElementById('modal-note');
+
+            if (status === 'sold' || status === 'next-plan') {
+                priceContainer.classList.add('hidden');
+                actionContainer.classList.add('hidden');
+                noteEl.innerText = status === 'sold' ? "Unit ini sudah terjual." : "Unit ini masuk dalam rencana pengembangan selanjutnya.";
+            } else if (status === 'hold') {
+                priceContainer.classList.remove('hidden');
+                actionContainer.classList.add('hidden');
+                
+                let price = specialUnitPrices[unitKey] || unitPrices[type];
+                priceEl.innerText = `Rp ${formatCurrency(price)}`;
+                noteEl.innerText = "Unit ini sedang dalam status HOLD. Silakan hubungi admin untuk informasi lebih lanjut.";
+            } else {
+                priceContainer.classList.remove('hidden');
+                actionContainer.classList.remove('hidden');
+                
+                let price = specialUnitPrices[unitKey] || unitPrices[type];
+                priceEl.innerText = `Rp ${formatCurrency(price)}`;
+                noteEl.innerText = "Unit ini tersedia untuk dipesan. Silakan lakukan simulasi untuk melihat detail pembayaran.";
+                
+                currentSelectedUnit = {
+                    key: unitKey,
+                    type: type,
+                    price: price
+                };
+            }
+            
+            modal.classList.add('open');
+        }
+
+        function closeModal() {
+            document.getElementById('side-modal').classList.remove('open');
+            currentSelectedUnit = null;
+        }
+
+        function selectUnitFromModal() {
+            if (!currentSelectedUnit) return;
+            
+            const unit = currentSelectedUnit;
+            closeModal();
+            switchView('simulasi');
+            
+            // Set unit type
+            document.getElementById('unit-type').value = unit.type;
+            
+            // Set Block and Unit using the new selection logic
+            const parts = unit.key.split('-');
+            if (parts.length === 2) {
+                const blockName = parts[0];
+                const unitNum = parseInt(parts[1]);
+                
+                selectBlock(blockName);
+                selectUnit(unitNum);
+            }
+            
+            // Set price (override if special)
+            const priceInput = document.getElementById('price-input');
+            const overrideCheck = document.getElementById('price-override');
+            
+            if (specialUnitPrices[unit.key]) {
+                overrideCheck.checked = true;
+                priceInput.disabled = false;
+                priceInput.value = formatCurrency(unit.price);
+            } else {
+                overrideCheck.checked = false;
+                priceInput.disabled = true;
+                updatePrice();
+            }
+            
+            calculateSimulation();
+        }
+
+        // Comparison Logic
+        let comparisonData = { 1: null, 2: null };
+
+        function copyToComparison(slot) {
+            const resContent = document.getElementById('result-content');
+            if (resContent.classList.contains('hidden')) {
+                alert('Silakan lakukan simulasi terlebih dahulu di menu Simulasi.');
+                switchView('simulasi');
+                return;
+            }
+
+            const data = {
+                type: document.getElementById('res-unit-title').innerText,
+                price: document.getElementById('res-price').innerText,
+                dp: document.getElementById('res-dp').innerText,
+                loan: document.getElementById('res-loan').innerText,
+                inst: document.getElementById('res-installment').innerText,
+                tenor: document.getElementById('res-tenor-info').innerText
+            };
+
+            comparisonData[slot] = data;
+            updateComparisonUI(slot);
+            
+            if (comparisonData[1] && comparisonData[2]) {
+                document.getElementById('comparison-table').classList.remove('hidden');
+            }
+        }
+
+        function updateComparisonUI(slot) {
+            const container = document.getElementById(`comp-slot-${slot}`);
+            const data = comparisonData[slot];
+            
+            container.innerHTML = `
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Unit</p>
+                        <p class="text-sm font-bold text-slate-700">${data.type}</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Harga</p>
+                            <p class="text-xs font-semibold text-slate-600">${data.price}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tenor</p>
+                            <p class="text-xs font-semibold text-slate-600">${data.tenor}</p>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Angsuran / bln</p>
+                        <p class="text-lg font-black text-gold">${data.inst}</p>
+                    </div>
+                </div>
+            `;
+
+            // Update Table
+            document.getElementById(`comp-type-${slot}`).innerText = data.type;
+            document.getElementById(`comp-price-${slot}`).innerText = data.price;
+            document.getElementById(`comp-dp-${slot}`).innerText = data.dp;
+            document.getElementById(`comp-loan-${slot}`).innerText = data.loan;
+            document.getElementById(`comp-inst-${slot}`).innerText = data.inst;
+        }
+
+        // Helpers
+        function formatCurrency(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function parseCurrency(str) {
+            return parseInt(str.replace(/\./g, '')) || 0;
+        }
+
+        function formatInputs() {
+            const currencyInputs = ['price-input', 'discount-input', 'utj-input', 'dp-nominal', 'dp-extra'];
+            currencyInputs.forEach(id => {
+                const el = document.getElementById(id);
+                el.addEventListener('input', (e) => {
+                    let val = parseCurrency(e.target.value);
+                    e.target.value = formatCurrency(val);
+                    
+                    if (id === 'dp-nominal') {
+                        const basePrice = parseCurrency(document.getElementById('price-input').value);
+                        const freePPN = document.getElementById('free-ppn').checked;
+                        const priceToUse = freePPN ? Math.round(basePrice / 1.11) : basePrice;
+                        
+                        let percent = (val / priceToUse) * 100;
+                        if (percent < 5) {
+                            percent = 5;
+                            const minNominal = Math.round(priceToUse * (percent / 100));
+                            e.target.value = formatCurrency(minNominal);
+                        }
+                        document.getElementById('dp-percent').value = percent.toFixed(2);
+                    }
+                });
+            });
+
+            document.getElementById('free-ppn').addEventListener('change', updateDPNominal);
+            document.getElementById('free-kanopi').addEventListener('change', calculateSimulation);
+            
+            const dpPercentInput = document.getElementById('dp-percent');
+            dpPercentInput.addEventListener('input', (e) => {
+                if (parseFloat(e.target.value) < 5) {
+                    e.target.value = 5;
+                }
+                updateDPNominal();
+            });
+            
+            dpPercentInput.addEventListener('blur', (e) => {
+                if (parseFloat(e.target.value) < 5 || isNaN(parseFloat(e.target.value))) {
+                    e.target.value = 5;
+                    updateDPNominal();
+                }
+            });
+        }
+
+        // Simulation Selection Logic
+        function initSimulationSelection() {
+            const blockContainer = document.getElementById('block-selection-container');
+            if (!blockContainer) return;
+            blockContainer.innerHTML = '';
+            
+            Object.keys(masterplanBlocks).sort().forEach(blockName => {
+                const blockInfo = masterplanBlocks[blockName];
+                // Check if block has any available units
+                const hasAvailable = blockInfo.units && blockInfo.units.some(unit => {
+                    const status = (typeof unit === 'object') ? (unit.status || blockInfo.status) : blockInfo.status;
+                    return status === 'available';
+                });
+
+                if (hasAvailable) {
+                    const btn = document.createElement('button');
+                    btn.className = 'selection-btn';
+                    btn.innerText = blockName;
+                    btn.onclick = () => selectBlock(blockName);
+                    btn.id = `btn-block-${blockName.replace(/\s+/g, '-')}`;
+                    blockContainer.appendChild(btn);
+                }
+            });
+        }
+
+        function selectBlock(blockName) {
+            document.querySelectorAll('#block-selection-container .selection-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById(`btn-block-${blockName.replace(/\s+/g, '-')}`);
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            document.getElementById('sim-block').value = blockName;
+            
+            const unitContainer = document.getElementById('unit-selection-container');
+            unitContainer.innerHTML = '';
+            
+            const blockInfo = masterplanBlocks[blockName];
+            if (blockInfo && blockInfo.units) {
+                blockInfo.units.forEach(unit => {
+                    const status = (typeof unit === 'object') ? (unit.status || blockInfo.status) : blockInfo.status;
+                    if (status === 'available') {
+                        const unitNum = typeof unit === 'object' ? unit.num : unit;
+                        const btn = document.createElement('button');
+                        btn.className = 'selection-btn';
+                        btn.innerText = unitNum;
+                        btn.onclick = () => selectUnit(unitNum);
+                        btn.id = `btn-unit-${unitNum}`;
+                        unitContainer.appendChild(btn);
+                    }
+                });
+            }
+            
+            document.getElementById('sim-unit').value = '';
+            
+            if (blockInfo && blockInfo.type) {
+                document.getElementById('unit-type').value = blockInfo.type;
+                updatePrice();
+            }
+        }
+
+        function selectUnit(unitNum) {
+            document.querySelectorAll('#unit-selection-container .selection-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById(`btn-unit-${unitNum}`);
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            document.getElementById('sim-unit').value = unitNum;
+            
+            const blockName = document.getElementById('sim-block').value;
+            const blockInfo = masterplanBlocks[blockName];
+            if (blockInfo && blockInfo.units) {
+                const unitInfo = blockInfo.units.find(u => (typeof u === 'object' ? u.num : u) === unitNum);
+                
+                // Update unit type if specific type exists for this unit
+                if (unitInfo && typeof unitInfo === 'object' && unitInfo.type) {
+                    document.getElementById('unit-type').value = unitInfo.type;
+                } else if (blockInfo.type) {
+                    // Fallback to block default type
+                    document.getElementById('unit-type').value = blockInfo.type;
+                }
+                
+                // Check if this unit has a special price override
+                const unitKey = `${blockName}-${unitNum}`;
+                if (specialUnitPrices[unitKey]) {
+                    document.getElementById('price-override').checked = true;
+                    togglePriceOverride();
+                    document.getElementById('price-input').value = formatCurrency(specialUnitPrices[unitKey]);
+                } else {
+                    document.getElementById('price-override').checked = false;
+                    togglePriceOverride();
+                    updatePrice();
+                }
+            }
+        }
+        
+        // PWA Install Logic
+        let deferredPrompt;
+        const installBtn = document.getElementById('install-btn');
+        const mobileInstallBtn = document.getElementById('mobile-install-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (installBtn) installBtn.classList.remove('hidden');
+            if (mobileInstallBtn) mobileInstallBtn.classList.remove('hidden');
+        });
+
+        const handleInstall = async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                if (installBtn) installBtn.classList.add('hidden');
+                if (mobileInstallBtn) mobileInstallBtn.classList.add('hidden');
+            }
+            deferredPrompt = null;
+        };
+
+        if (installBtn) installBtn.addEventListener('click', handleInstall);
+        if (mobileInstallBtn) mobileInstallBtn.addEventListener('click', handleInstall);
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('SW registered: ', registration);
+                }).catch(registrationError => {
+                    console.log('SW registration failed: ', registrationError);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

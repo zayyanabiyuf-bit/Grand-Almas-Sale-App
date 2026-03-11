@@ -1,0 +1,5 @@
+{
+  "name": "Grand Almas Sales App",
+  "description": "Internal sales tool for Grand Almas Residence with KPR simulation and stock check.",
+  "requestFramePermissions": []
+}
